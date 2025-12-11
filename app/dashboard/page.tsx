@@ -31,11 +31,13 @@ export default function DashboardPage() {
           expired: 5,
         };
 
-        const priorityDiff = statusPriority[a.status] - statusPriority[b.status];
+        const priorityDiff =
+          statusPriority[a.status] - statusPriority[b.status];
         if (priorityDiff !== 0) return priorityDiff;
 
         return (
-          new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()
+          new Date(b.registeredAt).getTime() -
+          new Date(a.registeredAt).getTime()
         );
       });
 
@@ -99,12 +101,12 @@ export default function DashboardPage() {
             setLoading(false);
             router.push("/login");
           }
-        }, 10000); // 10 second timeout
+        }, 60000); // 1 minute timeout
 
         const currentUser = await auth.getCurrentUser();
-        
+
         if (!mounted) return; // Component unmounted
-        
+
         clearTimeout(authCheckTimeout);
 
         if (currentUser) {
@@ -135,7 +137,7 @@ export default function DashboardPage() {
       data: { subscription },
     } = auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      
+
       try {
         if (session?.user) {
           setUser(session.user);
@@ -470,27 +472,6 @@ export default function DashboardPage() {
                       </button>
                     </div>
                   )}
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={() => {
-                        const qrUrl = generateVerificationQR(item.qr_code);
-                        alert(
-                          `Show this QR code at pickup:\n\n${qrUrl}\n\nOr scan this in the app to verify ownership.`
-                        );
-                      }}
-                      className="flex-1 px-4 py-3 rounded-lg font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all"
-                    >
-                      📱 Show Verification QR
-                    </button>
-                    <button
-                      onClick={() => router.push(`/found?qr=${item.qr_code}`)}
-                      className="flex-1 px-4 py-3 rounded-lg font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all"
-                    >
-                      👁️ View Public Page
-                    </button>
-                  </div>
 
                   {/* Unlink Button */}
                   <div className="mt-3 pt-3 border-t border-gray-200">
