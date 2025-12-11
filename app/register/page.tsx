@@ -1,9 +1,9 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
-import { db, auth } from "@/lib/supabase";
+import { auth, db } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 function RegisterPageContent() {
   const searchParams = useSearchParams();
@@ -30,9 +30,9 @@ function RegisterPageContent() {
       if (currentUser) {
         setUser(currentUser);
         // Pre-fill owner name from user metadata
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          ownerName: currentUser.user_metadata?.name || ""
+          ownerName: currentUser.user_metadata?.name || "",
         }));
       } else {
         router.push("/login?redirect=/register");
@@ -43,20 +43,20 @@ function RegisterPageContent() {
     checkAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          setFormData(prev => ({
-            ...prev,
-            ownerName: session.user.user_metadata?.name || ""
-          }));
-        } else {
-          setUser(null);
-          router.push("/login?redirect=/register");
-        }
+    const {
+      data: { subscription },
+    } = auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setFormData((prev) => ({
+          ...prev,
+          ownerName: session.user.user_metadata?.name || "",
+        }));
+      } else {
+        setUser(null);
+        router.push("/login?redirect=/register");
       }
-    );
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -153,13 +153,6 @@ function RegisterPageContent() {
               </a>
             </div>
           </div>
-
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full py-4 rounded-xl font-semibold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 transition-all"
-          >
-            Register Another Item
-          </button>
 
           <div className="text-center mt-8">
             <p className="text-gray-600 text-sm">
