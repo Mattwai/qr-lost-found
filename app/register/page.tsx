@@ -18,7 +18,9 @@ function RegisterPageContent() {
     let qrCodeId = qrParam;
     if (qrParam.includes("://") || qrParam.includes("/")) {
       // Extract the QR code part - look for QR- pattern in the URL
-      const qrMatch = qrParam.match(/QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+      const qrMatch = qrParam.match(
+        /QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i
+      );
       if (qrMatch) {
         qrCodeId = qrMatch[0];
       } else {
@@ -42,8 +44,8 @@ function RegisterPageContent() {
     if (qrParam && qrCode && qrParam !== qrCode) {
       // Clean up URL - replace the full URL with just the QR code
       const url = new URL(window.location.href);
-      url.searchParams.set('qr', qrCode);
-      window.history.replaceState({}, '', url.toString());
+      url.searchParams.set("qr", qrCode);
+      window.history.replaceState({}, "", url.toString());
     }
   }, [qrCode, searchParams]);
 
@@ -115,7 +117,7 @@ function RegisterPageContent() {
     }
 
     const itemData = {
-      qrCode: qrCode,
+      qr_code: qrCode,
       name: formData.itemName,
       ownerName: formData.ownerName,
       ownerEmail: user.email || "", // Use authenticated user's email

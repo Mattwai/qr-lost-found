@@ -80,12 +80,13 @@ export const isValidQRUrl = (url: string): boolean => {
   if (!url.startsWith(expectedPrefix)) {
     return false;
   }
-  
+
   // Extract QR code from URL
   const qrCode = url.substring(CONFIG.DOMAIN.length + 1);
-  
+
   // Validate UUID format: QR-{UUID}
-  const uuidRegex = /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+  const uuidRegex =
+    /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
   return uuidRegex.test(qrCode);
 };
 
@@ -120,7 +121,7 @@ export type ItemStatus =
 // Item data interface
 export interface ItemData {
   id: string;
-  qrCode: string;
+  qr_code: string;
   name: string;
   ownerName: string;
   ownerEmail: string;

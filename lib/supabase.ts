@@ -1,8 +1,8 @@
 // Supabase client configuration and database service
 
+import type { Session, User } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
 import type { ItemData, Location } from "./config";
-import type { User, Session } from "@supabase/supabase-js";
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -10,7 +10,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn(
-    "Supabase environment variables not set. Database features will not work.",
+    "Supabase environment variables not set. Database features will not work."
   );
 }
 
@@ -18,8 +18,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
-  }
+    detectSessionInUrl: true,
+  },
 });
 
 // Database service functions
@@ -27,8 +27,10 @@ export const db = {
   // Register a new item (requires authentication)
   async registerItem(itemData: Omit<ItemData, "id">): Promise<ItemData | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         console.error("User must be authenticated to register items");
         return null;
@@ -39,10 +41,10 @@ export const db = {
         .insert([
           {
             user_id: user.id,
-            qr_code: itemData.qrCode,
+            qr_code: itemData.qr_code,
             name: itemData.name,
             owner_name: itemData.ownerName || null,
-            owner_email: user.email || '',
+            owner_email: user.email || "",
             status: itemData.status,
             registered_at: itemData.registeredAt,
           },
@@ -90,8 +92,10 @@ export const db = {
   // Get all items for the current authenticated user
   async getCurrentUserItems(): Promise<ItemData[]> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         console.error("User must be authenticated to fetch items");
         return [];
@@ -125,7 +129,7 @@ export const db = {
       droppedOffAt?: string;
       pickedUpAt?: string;
       expiresAt?: string;
-    },
+    }
   ): Promise<ItemData | null> {
     try {
       const updateData: any = {
@@ -201,8 +205,10 @@ export const db = {
   // Delete/unlink an item (user can only delete their own items)
   async deleteItem(qrCode: string): Promise<boolean> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         console.error("User must be authenticated to delete items");
         return false;
@@ -230,7 +236,7 @@ export const db = {
   mapDbToItem(dbItem: any): ItemData {
     return {
       id: dbItem.qr_code, // Use qr_code as the ID for compatibility
-      qrCode: dbItem.qr_code,
+      qr_code: dbItem.qr_code,
       name: dbItem.name,
       ownerName: dbItem.owner_name || "",
       ownerEmail: dbItem.owner_email || "", // Will be empty for non-owner views
@@ -253,16 +259,20 @@ export const db = {
 // Authentication service
 export const auth = {
   // Sign up a new user
-  async signUp(email: string, password: string, name?: string): Promise<{ user: User | null; error: string | null }> {
+  async signUp(
+    email: string,
+    password: string,
+    name?: string
+  ): Promise<{ user: User | null; error: string | null }> {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            name: name || '',
-          }
-        }
+            name: name || "",
+          },
+        },
       });
 
       if (error) {
@@ -277,7 +287,10 @@ export const auth = {
   },
 
   // Sign in user
-  async signIn(email: string, password: string): Promise<{ user: User | null; error: string | null }> {
+  async signIn(
+    email: string,
+    password: string
+  ): Promise<{ user: User | null; error: string | null }> {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -299,7 +312,7 @@ export const auth = {
   async signOut(): Promise<{ error: string | null }> {
     try {
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         return { error: error.message };
       }
@@ -314,7 +327,9 @@ export const auth = {
   // Get current user
   async getCurrentUser(): Promise<User | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       return user;
     } catch (error) {
       console.error("Exception getting current user:", error);
@@ -325,7 +340,9 @@ export const auth = {
   // Get current session
   async getCurrentSession(): Promise<Session | null> {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       return session;
     } catch (error) {
       console.error("Exception getting current session:", error);
@@ -334,7 +351,9 @@ export const auth = {
   },
 
   // Listen to auth state changes
-  onAuthStateChange(callback: (event: string, session: Session | null) => void) {
+  onAuthStateChange(
+    callback: (event: string, session: Session | null) => void
+  ) {
     return supabase.auth.onAuthStateChange(callback);
   },
 
