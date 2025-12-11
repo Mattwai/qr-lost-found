@@ -321,10 +321,10 @@ export default function DashboardPage() {
               Your Items ({items.length})
             </h2>
             <a
-              href="/register"
+              href="/scan"
               className="px-6 py-3 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 transition-all"
             >
-              + Register New Item
+              📷 Scan QR Code
             </a>
           </div>
 
@@ -335,13 +335,13 @@ export default function DashboardPage() {
                 No Items Yet
               </h3>
               <p className="text-gray-600 mb-6">
-                Register your first QR code to get started!
+                Scan a QR code to register your first item!
               </p>
               <a
-                href="/register"
+                href="/scan"
                 className="inline-block px-8 py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all"
               >
-                Register First Item
+                📷 Scan QR Code
               </a>
             </div>
           ) : (
