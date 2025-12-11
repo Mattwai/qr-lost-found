@@ -1,10 +1,10 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
 import { DROP_OFF_LOCATIONS, type ItemData, type Location } from "@/lib/config";
 import { db } from "@/lib/supabase";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 type ViewState =
   | "notRegistered"
@@ -18,12 +18,12 @@ type ViewState =
 
 function FoundPageContent() {
   const searchParams = useSearchParams();
-  const qrCode = searchParams.get("qr");
+  const qrCode = searchParams.get("qr")?.toLowerCase() || null;
 
   const [viewState, setViewState] = useState<ViewState>("notRegistered");
   const [itemData, setItemData] = useState<ItemData | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
-    null,
+    null
   );
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
 
@@ -73,7 +73,7 @@ function FoundPageContent() {
     } else if (newStatus === "droppedOff" && selectedLocation) {
       additionalData.droppedOffAt = new Date().toISOString();
       additionalData.expiresAt = new Date(
-        Date.now() + 7 * 24 * 60 * 60 * 1000,
+        Date.now() + 7 * 24 * 60 * 60 * 1000
       ).toISOString();
       additionalData.location = selectedLocation;
     }
@@ -108,7 +108,7 @@ function FoundPageContent() {
 
         const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
         const hours = Math.floor(
-          (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+          (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
         );
         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
         setCountdown({ days, hours, minutes });

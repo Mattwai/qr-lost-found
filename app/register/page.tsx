@@ -11,7 +11,7 @@ function RegisterPageContent() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [qrCode, setQrCode] = useState<string | null>(() => {
-    const qrParam = searchParams.get("qr");
+    const qrParam = searchParams.get("qr")?.toLowerCase();
     if (!qrParam) return null;
 
     // Extract QR code from URL if it's a full URL
@@ -40,7 +40,7 @@ function RegisterPageContent() {
 
   // Redirect URL to clean QR parameter if needed
   useEffect(() => {
-    const qrParam = searchParams.get("qr");
+    const qrParam = searchParams.get("qr")?.toLowerCase();
     if (qrParam && qrCode && qrParam !== qrCode) {
       // Clean up URL - replace the full URL with just the QR code
       const url = new URL(window.location.href);
