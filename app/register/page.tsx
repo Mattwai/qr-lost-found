@@ -11,7 +11,7 @@ function RegisterPageContent() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [qrCode, setQrCode] = useState<string | null>(() => {
-    const qrParam = searchParams.get("qr")?.toLowerCase();
+    const qrParam = searchParams.get("qr");
     if (!qrParam) return null;
 
     // Extract QR code from URL if it's a full URL
@@ -33,14 +33,14 @@ function RegisterPageContent() {
     const uuidRegex =
       /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
     if (uuidRegex.test(qrCodeId)) {
-      return qrCodeId.toLowerCase(); // Convert to lowercase to match database constraint
+      return qrCodeId.toUpperCase(); // Convert to uppercase to match database format
     }
     return null; // No valid QR code provided
   });
 
   // Redirect URL to clean QR parameter if needed
   useEffect(() => {
-    const qrParam = searchParams.get("qr")?.toLowerCase();
+    const qrParam = searchParams.get("qr");
     if (qrParam && qrCode && qrParam !== qrCode) {
       // Clean up URL - replace the full URL with just the QR code
       const url = new URL(window.location.href);

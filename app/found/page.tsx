@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 type ViewState =
+  | "loading"
   | "notRegistered"
   | "active"
   | "reportedFound"
@@ -18,9 +19,9 @@ type ViewState =
 
 function FoundPageContent() {
   const searchParams = useSearchParams();
-  const qrCode = searchParams.get("qr")?.toLowerCase() || null;
+  const qrCode = searchParams.get("qr") || null;
 
-  const [viewState, setViewState] = useState<ViewState>("notRegistered");
+  const [viewState, setViewState] = useState<ViewState>("loading");
   const [itemData, setItemData] = useState<ItemData | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     null
@@ -156,6 +157,21 @@ function FoundPageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="max-w-2xl mx-auto p-4 py-8">
+        {/* State: Loading */}
+        {viewState === "loading" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="text-6xl mb-4">⏳</div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-4">
+                Loading...
+              </h1>
+              <p className="text-gray-600">
+                Checking QR code registration status...
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* State: Not Registered */}
         {viewState === "notRegistered" && (
           <div className="space-y-6">
