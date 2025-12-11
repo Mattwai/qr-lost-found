@@ -16,29 +16,35 @@ export default function DashboardPage() {
     [key: string]: { days: number; hours: number };
   }>({});
 
-  const loadUserItems = async () => {
-    // Fetch from Supabase (now uses user authentication)
-    const userItems = await db.getCurrentUserItems();
+  const loadUserItems = async (currentUser?: User) => {
+    try {
+      // Fetch from Supabase (pass user to avoid duplicate auth calls)
+      const userItems = await db.getCurrentUserItems(currentUser);
 
-    // Sort by status priority and date
-    const sortedItems = userItems.sort((a, b) => {
-      const statusPriority: { [key: string]: number } = {
-        droppedOff: 1,
-        reportedFound: 2,
-        active: 3,
-        pickedUp: 4,
-        expired: 5,
-      };
+      // Sort by status priority and date
+      const sortedItems = userItems.sort((a, b) => {
+        const statusPriority: { [key: string]: number } = {
+          droppedOff: 1,
+          reportedFound: 2,
+          active: 3,
+          pickedUp: 4,
+          expired: 5,
+        };
 
-      const priorityDiff = statusPriority[a.status] - statusPriority[b.status];
-      if (priorityDiff !== 0) return priorityDiff;
+        const priorityDiff = statusPriority[a.status] - statusPriority[b.status];
+        if (priorityDiff !== 0) return priorityDiff;
 
-      return (
-        new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()
-      );
-    });
+        return (
+          new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()
+        );
+      });
 
-    setItems(sortedItems);
+      setItems(sortedItems);
+    } catch (error) {
+      console.error("Failed to load user items:", error);
+      // Set empty items on error to prevent infinite loading
+      setItems([]);
+    }
   };
 
   const updateItemStatus = async (
@@ -58,7 +64,7 @@ export default function DashboardPage() {
     }
 
     // Reload items
-    await loadUserItems();
+    await loadUserItems(user ?? undefined);
   };
 
   const handleDeleteItem = async (itemId: string, itemName: string) => {
@@ -73,24 +79,53 @@ export default function DashboardPage() {
 
     if (success) {
       // Reload items
-      await loadUserItems();
+      await loadUserItems(user ?? undefined);
     } else {
       alert("Failed to unlink item. Please try again.");
     }
   };
 
   useEffect(() => {
+    let mounted = true;
+    let authCheckTimeout: NodeJS.Timeout;
+
     // Check authentication and setup auth listener
     const checkAuth = async () => {
-      const currentUser = await auth.getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-        await loadUserItems();
-      } else {
-        // Redirect to login if not authenticated
-        router.push("/login");
+      try {
+        // Add timeout to prevent infinite loading
+        authCheckTimeout = setTimeout(() => {
+          if (mounted) {
+            console.error("Auth check timed out, redirecting to login");
+            setLoading(false);
+            router.push("/login");
+          }
+        }, 10000); // 10 second timeout
+
+        const currentUser = await auth.getCurrentUser();
+        
+        if (!mounted) return; // Component unmounted
+        
+        clearTimeout(authCheckTimeout);
+
+        if (currentUser) {
+          setUser(currentUser);
+          await loadUserItems(currentUser);
+        } else {
+          // Redirect to login if not authenticated
+          router.push("/login");
+          return; // Don't set loading to false if redirecting
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        if (mounted) {
+          router.push("/login");
+          return;
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     };
 
     checkAuth();
@@ -99,16 +134,26 @@ export default function DashboardPage() {
     const {
       data: { subscription },
     } = auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        await loadUserItems();
-      } else {
+      if (!mounted) return;
+      
+      try {
+        if (session?.user) {
+          setUser(session.user);
+          await loadUserItems(session.user);
+        } else {
+          setUser(null);
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Auth state change error:", error);
         setUser(null);
         router.push("/login");
       }
     });
 
     return () => {
+      mounted = false;
+      clearTimeout(authCheckTimeout);
       subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

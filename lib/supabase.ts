@@ -90,11 +90,17 @@ export const db = {
   },
 
   // Get all items for the current authenticated user
-  async getCurrentUserItems(): Promise<ItemData[]> {
+  async getCurrentUserItems(currentUser?: User): Promise<ItemData[]> {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      let user = currentUser;
+      
+      // Only fetch user if not provided (avoid duplicate auth calls)
+      if (!user) {
+        const {
+          data: { user: fetchedUser },
+        } = await supabase.auth.getUser();
+        user = fetchedUser || undefined;
+      }
 
       if (!user) {
         console.error("User must be authenticated to fetch items");
