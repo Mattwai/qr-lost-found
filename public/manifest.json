@@ -1,0 +1,63 @@
+{
+  "name": "QR Lost & Found",
+  "short_name": "QR L&F",
+  "description": "Never lose your valuables again. Smart QR codes that help reunite you with your items.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Scan QR Code",
+      "short_name": "Scan",
+      "description": "Scan a QR code to report a found item",
+      "url": "/scan",
+      "icons": [
+        {
+          "src": "/icon-scan.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Register Item",
+      "short_name": "Register",
+      "description": "Register a new item with QR code",
+      "url": "/register",
+      "icons": [
+        {
+          "src": "/icon-register.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "permissions": [
+    "camera"
+  ],
+  "prefer_related_applications": false
+}
