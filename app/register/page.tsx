@@ -33,7 +33,7 @@ function RegisterPageContent() {
     const uuidRegex =
       /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
     if (uuidRegex.test(qrCodeId)) {
-      return qrCodeId.toUpperCase(); // Convert to uppercase to match database format
+      return qrCodeId;
     }
     return null; // No valid QR code provided
   });
