@@ -3,22 +3,22 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { generateQRUrl, type ItemData, STORAGE_KEYS } from "@/lib/config";
-import { db } from "@/lib/supabase";
+import { generateQRUrl, type ItemData } from "@/lib/config";
+import { db, auth } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemData[]>([]);
-  const [showLogin, setShowLogin] = useState(true);
-  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState<{
     [key: string]: { days: number; hours: number };
   }>({});
 
-  const loadUserItems = async (email: string) => {
-    // Fetch from Supabase
-    const userItems = await db.getItemsByEmail(email);
+  const loadUserItems = async () => {
+    // Fetch from Supabase (now uses user authentication)
+    const userItems = await db.getCurrentUserItems();
 
     // Sort by status priority and date
     const sortedItems = userItems.sort((a, b) => {
@@ -58,7 +58,7 @@ export default function DashboardPage() {
     }
 
     // Reload items
-    if (userEmail) await loadUserItems(userEmail);
+    await loadUserItems();
   };
 
   const handleDeleteItem = async (itemId: string, itemName: string) => {
@@ -73,22 +73,46 @@ export default function DashboardPage() {
 
     if (success) {
       // Reload items
-      if (userEmail) await loadUserItems(userEmail);
+      await loadUserItems();
     } else {
       alert("Failed to unlink item. Please try again.");
     }
   };
 
   useEffect(() => {
-    // Check if user is logged in
-    const storedEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL);
-    if (storedEmail) {
-      setUserEmail(storedEmail);
-      setShowLogin(false);
-      loadUserItems(storedEmail);
-    }
+    // Check authentication and setup auth listener
+    const checkAuth = async () => {
+      const currentUser = await auth.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        await loadUserItems();
+      } else {
+        // Redirect to login if not authenticated
+        router.push("/login");
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          await loadUserItems();
+        } else {
+          setUser(null);
+          router.push("/login");
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     // Update countdowns for items with expiry
@@ -123,21 +147,9 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim()) {
-      localStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
-      setUserEmail(email);
-      setShowLogin(false);
-      loadUserItems(email);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
-    setUserEmail(null);
-    setShowLogin(true);
-    setItems([]);
+  const handleLogout = async () => {
+    await auth.signOut();
+    // Auth state change will handle redirect
   };
 
   const getStatusBadge = (status: ItemData["status"]) => {
@@ -183,53 +195,26 @@ export default function DashboardPage() {
     return generateQRUrl(itemId);
   };
 
-  if (showLogin) {
+  // Show loading state
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
-          <div className="text-6xl mb-4 text-center">🔐</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">
-            Login to Dashboard
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Loading Dashboard...
           </h1>
-          <p className="text-gray-600 mb-6 text-center">
-            Enter your email to view your registered items
+          <p className="text-gray-600">
+            Please wait while we verify your authentication
           </p>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-900 mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 text-black placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all"
-            >
-              Login
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Link href="/" className="text-blue-600 hover:underline text-sm">
-              ← Back to Home
-            </Link>
-          </div>
         </div>
       </div>
     );
+  }
+
+  // If no user, useEffect will redirect to login
+  if (!user) {
+    return null;
   }
 
   return (
@@ -242,7 +227,8 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-gray-800 mb-1">
                 My Dashboard
               </h1>
-              <p className="text-gray-600">Logged in as: {userEmail}</p>
+              <p className="text-gray-600">Logged in as: {user.email}</p>
+              <p className="text-sm text-gray-500">Name: {user.user_metadata?.name || 'Not provided'}</p>
             </div>
             <button
               onClick={handleLogout}

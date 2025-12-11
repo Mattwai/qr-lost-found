@@ -1,11 +1,15 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
-import { db } from "@/lib/supabase";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { db, auth } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 function RegisterPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [qrCode] = useState<string>(() => {
     const qrParam = searchParams.get("qr");
     return qrParam || `QR-${Date.now()}`;
@@ -14,28 +18,73 @@ function RegisterPageContent() {
   const [formData, setFormData] = useState({
     itemName: "",
     ownerName: "",
-    ownerEmail: "",
   });
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const currentUser = await auth.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        // Pre-fill owner name from user metadata
+        setFormData(prev => ({
+          ...prev,
+          ownerName: currentUser.user_metadata?.name || ""
+        }));
+      } else {
+        router.push("/login");
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          setFormData(prev => ({
+            ...prev,
+            ownerName: session.user.user_metadata?.name || ""
+          }));
+        } else {
+          setUser(null);
+          router.push("/login");
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
+    if (!user) {
+      setError("You must be logged in to register items.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const itemData = {
       id: qrCode,
       qrCode: qrCode,
       name: formData.itemName,
       ownerName: formData.ownerName,
-      ownerEmail: formData.ownerEmail,
+      ownerEmail: user.email || "", // Use authenticated user's email
       status: "active" as const,
       registeredAt: new Date().toISOString(),
     };
 
-    // Save to Supabase
+    // Save to Supabase (now uses authenticated user)
     const savedItem = await db.registerItem(itemData);
 
     if (!savedItem) {
@@ -54,6 +103,28 @@ function RegisterPageContent() {
       [e.target.id]: e.target.value,
     });
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Loading...
+          </h1>
+          <p className="text-gray-600">
+            Please wait while we verify your authentication
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user, useEffect will redirect to login
+  if (!user) {
+    return null;
+  }
 
   if (showSuccess) {
     return (
@@ -78,7 +149,7 @@ function RegisterPageContent() {
                 found!
               </p>
               <p className="text-xs text-blue-700 mb-4">
-                Login with: <strong>{formData.ownerEmail}</strong>
+                Registered to: <strong>{user?.email}</strong>
               </p>
               <a
                 href="/dashboard"
@@ -172,22 +243,14 @@ function RegisterPageContent() {
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="ownerEmail"
-                className="block text-sm font-medium text-gray-900 mb-2"
-              >
-                Your Email *
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Registered Email
               </label>
-              <input
-                type="email"
-                id="ownerEmail"
-                required
-                value={formData.ownerEmail}
-                onChange={handleChange}
-                placeholder="john@example.com"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 text-black placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
-              />
+              <p className="text-gray-700 font-medium">{user?.email}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Items will be registered to your authenticated account
+              </p>
             </div>
 
             {error && (

@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import type { ItemData, Location } from "./config";
+import type { User, Session } from "@supabase/supabase-js";
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -13,21 +14,34 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
 
 // Database service functions
 export const db = {
-  // Register a new item
+  // Register a new item (requires authentication)
   async registerItem(itemData: Omit<ItemData, "id">): Promise<ItemData | null> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("User must be authenticated to register items");
+        return null;
+      }
+
       const { data, error } = await supabase
         .from("items")
         .insert([
           {
+            user_id: user.id,
             qr_code: itemData.qrCode,
             name: itemData.name,
             owner_name: itemData.ownerName || null,
-            owner_email: itemData.ownerEmail,
             status: itemData.status,
             registered_at: itemData.registeredAt,
           },
@@ -72,13 +86,20 @@ export const db = {
     }
   },
 
-  // Get all items for a user by email
-  async getItemsByEmail(email: string): Promise<ItemData[]> {
+  // Get all items for the current authenticated user
+  async getCurrentUserItems(): Promise<ItemData[]> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("User must be authenticated to fetch items");
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("items")
         .select("*")
-        .eq("owner_email", email)
+        .eq("user_id", user.id)
         .order("registered_at", { ascending: false });
 
       if (error) {
@@ -176,13 +197,21 @@ export const db = {
     }
   },
 
-  // Delete/unlink an item
+  // Delete/unlink an item (user can only delete their own items)
   async deleteItem(qrCode: string): Promise<boolean> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("User must be authenticated to delete items");
+        return false;
+      }
+
       const { error } = await supabase
         .from("items")
         .delete()
-        .eq("qr_code", qrCode);
+        .eq("qr_code", qrCode)
+        .eq("user_id", user.id);
 
       if (error) {
         console.error("Error deleting item:", error);
@@ -203,7 +232,7 @@ export const db = {
       qrCode: dbItem.qr_code,
       name: dbItem.name,
       ownerName: dbItem.owner_name || "",
-      ownerEmail: dbItem.owner_email,
+      ownerEmail: dbItem.owner_email || "", // Will be empty for non-owner views
       status: dbItem.status,
       location: dbItem.location || undefined,
       reportedFoundAt: dbItem.reported_found_at || undefined,
@@ -217,6 +246,101 @@ export const db = {
   // Check if Supabase is configured
   isConfigured(): boolean {
     return !!(supabaseUrl && supabaseAnonKey);
+  },
+};
+
+// Authentication service
+export const auth = {
+  // Sign up a new user
+  async signUp(email: string, password: string, name?: string): Promise<{ user: User | null; error: string | null }> {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name || '',
+          }
+        }
+      });
+
+      if (error) {
+        return { user: null, error: error.message };
+      }
+
+      return { user: data.user, error: null };
+    } catch (error) {
+      console.error("Exception during sign up:", error);
+      return { user: null, error: "An unexpected error occurred" };
+    }
+  },
+
+  // Sign in user
+  async signIn(email: string, password: string): Promise<{ user: User | null; error: string | null }> {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        return { user: null, error: error.message };
+      }
+
+      return { user: data.user, error: null };
+    } catch (error) {
+      console.error("Exception during sign in:", error);
+      return { user: null, error: "An unexpected error occurred" };
+    }
+  },
+
+  // Sign out user
+  async signOut(): Promise<{ error: string | null }> {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        return { error: error.message };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error("Exception during sign out:", error);
+      return { error: "An unexpected error occurred" };
+    }
+  },
+
+  // Get current user
+  async getCurrentUser(): Promise<User | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    } catch (error) {
+      console.error("Exception getting current user:", error);
+      return null;
+    }
+  },
+
+  // Get current session
+  async getCurrentSession(): Promise<Session | null> {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    } catch (error) {
+      console.error("Exception getting current session:", error);
+      return null;
+    }
+  },
+
+  // Listen to auth state changes
+  onAuthStateChange(callback: (event: string, session: Session | null) => void) {
+    return supabase.auth.onAuthStateChange(callback);
+  },
+
+  // Check if user is authenticated
+  async isAuthenticated(): Promise<boolean> {
+    const session = await this.getCurrentSession();
+    return !!session;
   },
 };
 

@@ -13,16 +13,25 @@ export default function Home() {
             you with your items.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <a
-              href="/dashboard"
-              className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-purple-600 hover:bg-purple-700 transition-all shadow-lg"
+              href="/signup"
+              className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
             >
-              📊 My Dashboard
+              🚀 Sign Up Free
             </a>
             <a
+              href="/login"
+              className="px-8 py-4 rounded-xl font-semibold text-purple-600 text-lg bg-white hover:bg-purple-50 transition-all shadow-lg border-2 border-purple-600"
+            >
+              📊 Login to Dashboard
+            </a>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
               href="/scan"
-              className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all shadow-lg"
+              className="px-6 py-3 rounded-lg font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all"
             >
               📷 Scan QR Code
             </a>
