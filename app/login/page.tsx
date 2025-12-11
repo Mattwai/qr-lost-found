@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/supabase";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -13,13 +13,15 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   // Check if user is already logged in
   useEffect(() => {
     const checkAuth = async () => {
       const isAuthenticated = await auth.isAuthenticated();
       if (isAuthenticated) {
-        router.push("/dashboard");
+        router.push(redirectTo);
       }
     };
     checkAuth();
@@ -51,8 +53,8 @@ export default function LoginPage() {
       }
 
       if (user) {
-        // Success - redirect to dashboard
-        router.push("/dashboard");
+        // Success - redirect to intended page or dashboard
+        router.push(redirectTo);
       }
     } catch (err) {
       console.error("Sign in error:", err);
@@ -156,5 +158,21 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin text-6xl mb-4">⏳</div>
+          </div>
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/supabase";
 
-export default function SignUpPage() {
+function SignUpPageContent() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,6 +15,8 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   const validatePassword = (password: string): string | null => {
     if (password.length < 8) {
@@ -76,7 +78,7 @@ export default function SignUpPage() {
 
       if (user) {
         // Success - redirect to dashboard
-        router.push("/dashboard");
+        router.push(redirectTo);
       }
     } catch (err) {
       console.error("Sign up error:", err);
@@ -207,5 +209,21 @@ export default function SignUpPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin text-6xl mb-4">⏳</div>
+          </div>
+        </div>
+      }
+    >
+      <SignUpPageContent />
+    </Suspense>
   );
 }

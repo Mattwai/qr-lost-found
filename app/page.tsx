@@ -15,16 +15,10 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <a
-              href="/signup"
-              className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
-            >
-              🚀 Sign Up Free
-            </a>
-            <a
               href="/login"
-              className="px-8 py-4 rounded-xl font-semibold text-purple-600 text-lg bg-white hover:bg-purple-50 transition-all shadow-lg border-2 border-purple-600"
+              className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all shadow-lg"
             >
-              📊 Login to Dashboard
+              📊 Login / Sign Up
             </a>
           </div>
 
