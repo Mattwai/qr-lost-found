@@ -236,13 +236,6 @@ function FoundPageContent() {
             >
               🔍 I Found This Item
             </button>
-
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <p className="text-sm text-blue-800 text-center">
-                ℹ️ For privacy, owner contact details are hidden until you
-                report finding the item and confirm drop-off.
-              </p>
-            </div>
           </div>
         )}
 
@@ -321,8 +314,7 @@ function FoundPageContent() {
                   <h3 className="font-bold text-red-900 mb-2">Important</h3>
                   <p className="text-sm text-red-800">
                     Please only click &quot;I Dropped It Off&quot; after you
-                    have physically dropped off the item at the location. This
-                    helps us maintain trust in the system.
+                    have physically dropped off the item at the location.
                   </p>
                 </div>
               </div>

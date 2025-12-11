@@ -45,8 +45,7 @@ export default function Home() {
                 1. Register
               </h3>
               <p className="text-gray-600">
-                Attach a QR code to your item and register it with your contact
-                details
+                Attach a QR code to your item and register it with your account
               </p>
             </div>
 
@@ -55,7 +54,7 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-800 mb-2">2. Scan</h3>
               <p className="text-gray-600">
                 If someone finds your item, they simply scan the QR code with
-                their camera or phone
+                their phone camera
               </p>
             </div>
 
@@ -86,8 +85,7 @@ export default function Home() {
                   Privacy Protected
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  Your contact details stay hidden until someone reports finding
-                  your item
+                  Your contact details stay hidden
                 </p>
               </div>
             </div>

@@ -23,11 +23,7 @@ function SignUpPageContent() {
     setLoading(true);
 
     // Validation
-    if (
-      !formData.email ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
       setError("All fields are required");
       setLoading(false);
       return;
@@ -127,6 +123,7 @@ function SignUpPageContent() {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Enter your password"
               />
             </div>
 
