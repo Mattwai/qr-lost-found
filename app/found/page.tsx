@@ -2,58 +2,23 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-
-interface ItemData {
-  qrCode: string;
-  name: string;
-  ownerName: string;
-  ownerEmail: string;
-  status: "active" | "droppedOff";
-  location?: Location;
-  droppedOffAt?: string;
-  expiresAt?: string;
-}
-
-interface Location {
-  id: number;
-  name: string;
-  address: string;
-  phone: string;
-}
-
-const locations: Location[] = [
-  {
-    id: 1,
-    name: "Central Library",
-    address: "123 Main Street, Downtown",
-    phone: "555-0101",
-  },
-  {
-    id: 2,
-    name: "City Police Station",
-    address: "456 Oak Avenue, City Center",
-    phone: "555-0102",
-  },
-  {
-    id: 3,
-    name: "Community Center",
-    address: "789 Elm Street, Northside",
-    phone: "555-0103",
-  },
-  {
-    id: 4,
-    name: "Campus Security Office",
-    address: "321 University Drive, Campus",
-    phone: "555-0104",
-  },
-];
+import Link from "next/link";
+import {
+  DROP_OFF_LOCATIONS,
+  type ItemData,
+  type Location,
+  STORAGE_KEYS,
+} from "@/lib/config";
 
 type ViewState =
   | "notRegistered"
-  | "registered"
-  | "dropOffSelection"
+  | "active"
+  | "reportedFound"
+  | "selectLocation"
+  | "confirmDropOff"
   | "droppedOff"
-  | "thankYou";
+  | "pickedUp"
+  | "expired";
 
 function FoundPageContent() {
   const searchParams = useSearchParams();
@@ -64,28 +29,74 @@ function FoundPageContent() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     null,
   );
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0 });
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
+
+  const loadItemData = () => {
+    if (!qrCode) return;
+
+    const items = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
+    );
+    const item = items[qrCode];
+
+    if (!item) {
+      setViewState("notRegistered");
+      return;
+    }
+
+    setItemData(item);
+
+    // Set view state based on item status
+    switch (item.status) {
+      case "active":
+        setViewState("active");
+        break;
+      case "reportedFound":
+        setViewState("reportedFound");
+        break;
+      case "droppedOff":
+        setViewState("droppedOff");
+        break;
+      case "pickedUp":
+        setViewState("pickedUp");
+        break;
+      case "expired":
+        setViewState("expired");
+        break;
+      default:
+        setViewState("active");
+    }
+  };
+
+  const updateItemStatus = (newStatus: ItemData["status"]) => {
+    if (!qrCode) return;
+
+    const items = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
+    );
+    if (items[qrCode]) {
+      items[qrCode].status = newStatus;
+
+      if (newStatus === "reportedFound") {
+        items[qrCode].reportedFoundAt = new Date().toISOString();
+      } else if (newStatus === "droppedOff" && selectedLocation) {
+        items[qrCode].droppedOffAt = new Date().toISOString();
+        items[qrCode].expiresAt = new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString();
+        items[qrCode].location = selectedLocation;
+      }
+
+      localStorage.setItem(STORAGE_KEYS.QR_ITEMS, JSON.stringify(items));
+      loadItemData();
+    }
+  };
 
   useEffect(() => {
     if (!qrCode) return;
 
-    // Load from localStorage
-    const loadItemData = () => {
-      const items = JSON.parse(localStorage.getItem("qrItems") || "{}");
-      const item = items[qrCode];
-
-      if (!item) {
-        setViewState("notRegistered");
-      } else if (item.status === "droppedOff") {
-        setItemData(item);
-        setViewState("droppedOff");
-      } else {
-        setItemData(item);
-        setViewState("registered");
-      }
-    };
-
     loadItemData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qrCode]);
 
   useEffect(() => {
@@ -96,7 +107,12 @@ function FoundPageContent() {
         const timeLeft = deadline - now;
 
         if (timeLeft <= 0) {
-          setCountdown({ days: 0, hours: 0 });
+          setCountdown({ days: 0, hours: 0, minutes: 0 });
+
+          // Auto-expire if needed
+          if (itemData.status === "droppedOff") {
+            updateItemStatus("expired");
+          }
           return;
         }
 
@@ -104,30 +120,27 @@ function FoundPageContent() {
         const hours = Math.floor(
           (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
         );
-        setCountdown({ days, hours });
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        setCountdown({ days, hours, minutes });
       }, 1000);
 
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewState, itemData]);
 
+  const handleReportFound = () => {
+    updateItemStatus("reportedFound");
+  };
+
+  const handleSelectLocation = (location: Location) => {
+    setSelectedLocation(location);
+    setViewState("confirmDropOff");
+  };
+
   const handleConfirmDropOff = () => {
-    if (!selectedLocation || !qrCode || !itemData) return;
-
-    const updatedItem: ItemData = {
-      ...itemData,
-      status: "droppedOff",
-      location: selectedLocation,
-      droppedOffAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    };
-
-    const items = JSON.parse(localStorage.getItem("qrItems") || "{}");
-    items[qrCode] = updatedItem;
-    localStorage.setItem("qrItems", JSON.stringify(items));
-
-    setItemData(updatedItem);
-    setViewState("thankYou");
+    if (!selectedLocation) return;
+    updateItemStatus("droppedOff");
   };
 
   if (!qrCode) {
@@ -138,7 +151,13 @@ function FoundPageContent() {
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
             Invalid QR Code
           </h1>
-          <p className="text-gray-600">Please scan a valid QR code.</p>
+          <p className="text-gray-600 mb-6">Please scan a valid QR code.</p>
+          <Link
+            href="/"
+            className="inline-block px-6 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+          >
+            Go to Home
+          </Link>
         </div>
       </div>
     );
@@ -147,7 +166,7 @@ function FoundPageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="max-w-2xl mx-auto p-4 py-8">
-        {/* State 1: Not Registered */}
+        {/* State: Not Registered */}
         {viewState === "notRegistered" && (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
@@ -156,7 +175,8 @@ function FoundPageContent() {
                 QR Code Not Registered
               </h1>
               <p className="text-gray-600 mb-6">
-                This QR code hasn&apos;t been registered yet.
+                This QR code hasn&apos;t been registered yet. Register it to
+                start protecting your item!
               </p>
               <a
                 href={`/register?qr=${qrCode}`}
@@ -168,8 +188,8 @@ function FoundPageContent() {
           </div>
         )}
 
-        {/* State 2: Registered - Show Owner Info */}
-        {viewState === "registered" && itemData && (
+        {/* State: Active - Show Owner Info */}
+        {viewState === "active" && itemData && (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">👋</div>
@@ -197,7 +217,7 @@ function FoundPageContent() {
             </div>
 
             <button
-              onClick={() => setViewState("dropOffSelection")}
+              onClick={handleReportFound}
               className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
             >
               🔍 I Found This Item
@@ -206,86 +226,137 @@ function FoundPageContent() {
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <p className="text-sm text-blue-800 text-center">
                 ℹ️ For privacy, owner contact details are hidden until you
-                report finding the item.
+                report finding the item and confirm drop-off.
               </p>
             </div>
           </div>
         )}
 
-        {/* State 3: Drop-off Selection */}
-        {viewState === "dropOffSelection" && (
+        {/* State: Reported Found - Show Drop-off Locations */}
+        {(viewState === "reportedFound" || viewState === "selectLocation") &&
+          itemData && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+                <div className="text-6xl mb-4">📍</div>
+                <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                  Select Drop-off Location
+                </h1>
+                <p className="text-gray-600">
+                  Please drop off the item at one of these partner locations:
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                <p className="text-sm text-yellow-800 text-center">
+                  ⚠️ The owner has been notified that you found their item.
+                  Please select where you&apos;ll drop it off.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-xl p-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">
+                  📍 Available Locations
+                </h2>
+                <div className="space-y-3">
+                  {DROP_OFF_LOCATIONS.map((location) => (
+                    <button
+                      key={location.id}
+                      onClick={() => handleSelectLocation(location)}
+                      className="w-full border-2 rounded-lg p-4 text-left hover:border-blue-500 hover:bg-blue-50 transition-all border-gray-200"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-800">
+                            {location.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {location.address}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            📞 {location.phone}
+                          </p>
+                        </div>
+                        <div className="ml-3 text-2xl">→</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+        {/* State: Confirm Drop-off */}
+        {viewState === "confirmDropOff" && itemData && selectedLocation && (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-              <div className="text-6xl mb-4">📍</div>
+              <div className="text-6xl mb-4">✅</div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                Select Drop-off Location
+                Confirm Drop-off
               </h1>
-              <p className="text-gray-600">
-                Please drop off the item at one of these partner locations:
+              <p className="text-gray-600">You selected:</p>
+              <p className="text-xl font-bold text-blue-600 mt-2">
+                {selectedLocation.name}
               </p>
+              <p className="text-gray-600 mt-1">{selectedLocation.address}</p>
+            </div>
+
+            <div className="bg-red-50 rounded-lg p-6 border-2 border-red-200">
+              <div className="flex items-start">
+                <div className="text-3xl mr-4">⚠️</div>
+                <div>
+                  <h3 className="font-bold text-red-900 mb-2">Important</h3>
+                  <p className="text-sm text-red-800">
+                    Please only click &quot;I Dropped It Off&quot; after you
+                    have physically dropped off the item at the location. This
+                    helps us maintain trust in the system.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                📍 Available Locations
-              </h2>
-              <div className="space-y-3">
-                {locations.map((location) => (
-                  <div
-                    key={location.id}
-                    onClick={() => setSelectedLocation(location)}
-                    className={`border-2 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-all ${
-                      selectedLocation?.id === location.id
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200"
-                    }`}
-                  >
-                    <div className="flex items-start">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-800">
-                          {location.name}
-                        </h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {location.address}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          📞 {location.phone}
-                        </p>
-                      </div>
-                      {selectedLocation?.id === location.id && (
-                        <div className="ml-3 text-2xl">✅</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <h3 className="font-bold text-gray-800 mb-3">📋 Instructions:</h3>
+              <ol className="space-y-2 text-sm text-gray-700">
+                <li className="flex items-start">
+                  <span className="font-bold mr-2">1.</span>
+                  <span>
+                    Take the item to <strong>{selectedLocation.name}</strong>
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <span className="font-bold mr-2">2.</span>
+                  <span>
+                    Tell the staff you&apos;re dropping off a lost item from QR
+                    Lost & Found
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <span className="font-bold mr-2">3.</span>
+                  <span>
+                    After drop-off, return here and click the button below
+                  </span>
+                </li>
+              </ol>
             </div>
 
             <button
               onClick={handleConfirmDropOff}
-              disabled={!selectedLocation}
-              className={`w-full py-4 rounded-xl font-semibold text-white text-lg transition-all ${
-                selectedLocation
-                  ? "bg-green-600 hover:bg-green-700 cursor-pointer"
-                  : "bg-gray-300 cursor-not-allowed"
-              }`}
+              className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
             >
-              {selectedLocation
-                ? "✅ Confirm Drop-off"
-                : "Select a Location First"}
+              ✅ I Dropped It Off Here
             </button>
 
             <button
-              onClick={() => setViewState("registered")}
+              onClick={() => setViewState("reportedFound")}
               className="w-full py-3 rounded-xl font-semibold text-gray-600 bg-white border-2 border-gray-300 hover:bg-gray-50 transition-all"
             >
-              ← Back
+              ← Choose Different Location
             </button>
           </div>
         )}
 
-        {/* State 4: Dropped Off (with countdown) */}
-        {viewState === "droppedOff" && itemData && (
+        {/* State: Dropped Off (with countdown) */}
+        {viewState === "droppedOff" && itemData && itemData.location && (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">📦</div>
@@ -305,10 +376,13 @@ function FoundPageContent() {
                 <div className="bg-white rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-1">Location:</p>
                   <p className="text-lg font-bold text-gray-800">
-                    {itemData.location?.name}
+                    {itemData.location.name}
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
-                    {itemData.location?.address}
+                    {itemData.location.address}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    📞 {itemData.location.phone}
                   </p>
                 </div>
 
@@ -323,15 +397,28 @@ function FoundPageContent() {
                         day: "numeric",
                       })}
                   </p>
-                  <div className="mt-2">
-                    <div className="flex items-center justify-center gap-2 text-2xl font-bold text-gray-800">
-                      <div className="bg-blue-100 rounded-lg px-4 py-2">
-                        <span>{countdown.days}</span>
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-600 mb-2">
+                      Time remaining:
+                    </p>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="bg-blue-100 rounded-lg px-4 py-3 text-center">
+                        <span className="text-2xl font-bold text-blue-900">
+                          {countdown.days}
+                        </span>
                         <p className="text-xs text-gray-600 mt-1">days</p>
                       </div>
-                      <div className="bg-blue-100 rounded-lg px-4 py-2">
-                        <span>{countdown.hours}</span>
+                      <div className="bg-blue-100 rounded-lg px-4 py-3 text-center">
+                        <span className="text-2xl font-bold text-blue-900">
+                          {countdown.hours}
+                        </span>
                         <p className="text-xs text-gray-600 mt-1">hours</p>
+                      </div>
+                      <div className="bg-blue-100 rounded-lg px-4 py-3 text-center">
+                        <span className="text-2xl font-bold text-blue-900">
+                          {countdown.minutes}
+                        </span>
+                        <p className="text-xs text-gray-600 mt-1">mins</p>
                       </div>
                     </div>
                   </div>
@@ -345,40 +432,65 @@ function FoundPageContent() {
                 be donated or discarded.
               </p>
             </div>
+
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <p className="text-sm text-blue-800 text-center">
+                💙 Thank you for helping return this item to its owner!
+              </p>
+            </div>
           </div>
         )}
 
-        {/* State 5: Success Thank You */}
-        {viewState === "thankYou" && itemData && (
+        {/* State: Picked Up */}
+        {viewState === "pickedUp" && itemData && (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-              <div className="text-6xl mb-4">✅</div>
-              <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                Thank You!
+              <div className="text-6xl mb-4">🎉</div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                Item Retrieved!
               </h1>
-              <p className="text-gray-600 mb-6">
-                The item has been marked as dropped off at:
+              <p className="text-gray-600">
+                This item has been picked up by the owner.
               </p>
-              <p className="text-xl font-bold text-blue-600 mb-2">
-                {itemData.location?.name}
-              </p>
-              <p className="text-gray-600 mb-6">{itemData.location?.address}</p>
+            </div>
 
-              <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
-                <p className="text-blue-800 mb-2">
-                  💙 You&apos;re awesome for helping return this item!
-                </p>
-                <p className="text-sm text-blue-700">
-                  The owner has been notified and will pick it up within 7 days.
-                </p>
-              </div>
+            <div className="bg-green-50 rounded-lg p-6 border border-green-200">
+              <p className="text-sm text-green-800 text-center">
+                ✅ The owner successfully retrieved their{" "}
+                <strong>{itemData.name}</strong>.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* State: Expired */}
+        {viewState === "expired" && itemData && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="text-6xl mb-4">⏰</div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                Pickup Period Expired
+              </h1>
+              <p className="text-gray-600">
+                The 7-day pickup window for this item has expired.
+              </p>
+            </div>
+
+            <div className="bg-red-50 rounded-lg p-6 border border-red-200">
+              <p className="text-sm text-red-800 text-center">
+                The item may have been donated or discarded according to the
+                drop-off location&apos;s policy.
+              </p>
             </div>
           </div>
         )}
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-gray-600 text-sm">
+          <Link href="/" className="text-blue-600 hover:underline text-sm">
+            ← Back to Home
+          </Link>
+          <p className="text-gray-600 text-sm mt-4">
             Powered by <strong>QR Lost & Found</strong> 📱
           </p>
         </div>

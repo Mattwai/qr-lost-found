@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
+import { STORAGE_KEYS } from "@/lib/config";
 
 function RegisterPageContent() {
   const searchParams = useSearchParams();
@@ -31,9 +32,11 @@ function RegisterPageContent() {
     };
 
     // Store in localStorage
-    const items = JSON.parse(localStorage.getItem("qrItems") || "{}");
+    const items = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
+    );
     items[qrCode] = itemData;
-    localStorage.setItem("qrItems", JSON.stringify(items));
+    localStorage.setItem(STORAGE_KEYS.QR_ITEMS, JSON.stringify(items));
 
     setShowSuccess(true);
   };
@@ -59,25 +62,23 @@ function RegisterPageContent() {
               successfully.
             </p>
 
-            <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+            <div className="bg-blue-50 rounded-lg p-6 border border-blue-200 mb-6">
               <h3 className="font-bold text-blue-900 mb-3">
-                📲 Download the Mobile App
+                📊 Manage Your Items
               </h3>
               <p className="text-sm text-blue-800 mb-4">
                 Track your registered items and get notified if they&apos;re
                 found!
               </p>
-              <p className="text-xs text-blue-700 mb-3">
+              <p className="text-xs text-blue-700 mb-4">
                 Login with: <strong>{formData.ownerEmail}</strong>
               </p>
-              <div className="flex gap-3 justify-center">
-                <button className="bg-black text-white px-6 py-2 rounded-lg text-sm font-semibold">
-                  App Store
-                </button>
-                <button className="bg-black text-white px-6 py-2 rounded-lg text-sm font-semibold">
-                  Google Play
-                </button>
-              </div>
+              <a
+                href="/dashboard"
+                className="inline-block w-full px-6 py-3 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+              >
+                Go to Dashboard
+              </a>
             </div>
           </div>
 

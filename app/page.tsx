@@ -15,6 +15,12 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
+              href="/dashboard"
+              className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-purple-600 hover:bg-purple-700 transition-all shadow-lg"
+            >
+              📊 My Dashboard
+            </a>
+            <a
               href="/scan"
               className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all shadow-lg"
             >
@@ -25,12 +31,6 @@ export default function Home() {
               className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
             >
               Register a QR Code
-            </a>
-            <a
-              href="/found?qr=DEMO-123456"
-              className="px-8 py-4 rounded-xl font-semibold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 transition-all"
-            >
-              Try Demo
             </a>
           </div>
         </div>

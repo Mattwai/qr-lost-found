@@ -1,0 +1,65 @@
+Feat(pwa): Complete QR Lost & Found PWA implementation
+
+Major Changes:
+- Converted from mobile+web+database to single PWA with localStorage
+- Implemented improved two-step finder flow (Report Found → Confirm Drop-off)
+- Created owner dashboard with status tracking and countdown timers
+- Centralized configuration in lib/config.ts
+- Updated domain to qr-lost-found.vercel.app
+
+New Features:
+- Owner Dashboard (/dashboard)
+  - Email-only login
+  - View all registered items with status badges
+  - Real-time countdown timers
+  - Action buttons (mark picked up, false alarm)
+  - Stats overview
+
+- Enhanced Finder Flow (/found)
+  - Multi-state UI (Active → Reported Found → Dropped Off)
+  - Location selection interface
+  - Warning messages (no account suspension reference)
+  - Status checking for anyone scanning QR
+  - Live countdown display (days, hours, minutes)
+
+- Configuration System (lib/config.ts)
+  - Centralized domain and settings
+  - Drop-off locations (manually configured)
+  - Helper functions and TypeScript interfaces
+  - LocalStorage keys constants
+
+Updated Pages:
+- Homepage: Added dashboard link
+- Register: Links to dashboard instead of mobile app
+- Found: Complete rewrite with improved UX
+- Scan: No changes (already working)
+
+Documentation:
+- README.md: Complete user flows and architecture
+- QUICKSTART.md: Step-by-step testing guide
+- DEPLOYMENT.md: Vercel deployment instructions
+- CHANGES.md: Comprehensive changelog
+
+Technical:
+- Fixed linting errors (function declaration order)
+- Replaced <a> tags with Next.js <Link> components
+- Added TypeScript type safety improvements
+- Build passes with no errors
+- Ready for Vercel deployment
+
+State Machine:
+1. Active → Item with owner (default)
+2. Reported Found → Someone found it
+3. Dropped Off → At location, 7-day countdown
+4. Picked Up → Owner retrieved
+5. Expired → Pickup window passed
+
+Security:
+- Email-only login (prototype)
+- Trust-based drop-off system
+- Client-side localStorage
+- Ready for backend integration
+
+Ready for deployment to qr-lost-found.vercel.app
+
+Don't forget to commit!
