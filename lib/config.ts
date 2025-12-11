@@ -45,8 +45,8 @@ export const DROP_OFF_LOCATIONS: Location[] = [
   },
   {
     id: 3,
-    name: "Community Center",
-    address: "789 Elm Street, Northside",
+    name: "Fudan University, International Students Main Building, Reception",
+    address: "复旦大学邯郸校区北苑学生生活园区留学生公寓主楼",
     phone: "555-0103",
     coordinates: {
       lat: 40.7489,

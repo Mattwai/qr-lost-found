@@ -26,12 +26,6 @@ export default function Home() {
             >
               📷 Scan QR Code
             </a>
-            <a
-              href="/register"
-              className="px-8 py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
-            >
-              Register a QR Code
-            </a>
           </div>
         </div>
 
@@ -135,36 +129,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl shadow-xl p-8 md:p-12 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to Protect Your Items?
-          </h2>
-          <p className="text-xl mb-8 text-blue-100">
-            Join thousands of people who use QR Lost & Found
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/scan"
-              className="px-8 py-4 rounded-xl font-semibold text-blue-600 bg-white hover:bg-gray-50 transition-all shadow-lg"
-            >
-              📷 Scan QR Code
-            </a>
-            <a
-              href="/register"
-              className="px-8 py-4 rounded-xl font-semibold text-white bg-black hover:bg-gray-900 transition-all"
-            >
-              Get Started Free
-            </a>
-          </div>
-        </div>
-
         {/* Footer */}
         <div className="text-center mt-12">
           <p className="text-gray-600 text-sm">
-            © 2024 QR Lost & Found. Made with ❤️ to help reunite people with
-            their belongings.
+            © 2025 QR Lost & Found. Made to help reunite people with their
+            belongings.
           </p>
         </div>
       </div>
