@@ -144,7 +144,7 @@ function RegisterPageContent() {
                 value={formData.itemName}
                 onChange={handleChange}
                 placeholder="e.g., Black Backpack, Water Bottle"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
+                className="w-full border-2 border-gray-200 rounded-lg p-3 text-black placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
@@ -161,7 +161,7 @@ function RegisterPageContent() {
                 value={formData.ownerName}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
+                className="w-full border-2 border-gray-200 rounded-lg p-3 text-black placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
@@ -179,7 +179,7 @@ function RegisterPageContent() {
                 value={formData.ownerEmail}
                 onChange={handleChange}
                 placeholder="john@example.com"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
+                className="w-full border-2 border-gray-200 rounded-lg p-3 text-black placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
