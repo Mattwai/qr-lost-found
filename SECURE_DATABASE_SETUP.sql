@@ -358,11 +358,32 @@ GRANT SELECT ON items_dashboard TO authenticated;
 CREATE OR REPLACE FUNCTION create_user_profile()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, name)
-  VALUES (
-    NEW.id, 
-    COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1))
-  );
+  BEGIN
+    -- Temporarily disable RLS for this insert
+    PERFORM set_config('row_security', 'off', true);
+    
+    INSERT INTO profiles (id, name)
+    VALUES (
+      NEW.id, 
+      COALESCE(
+        CASE 
+          WHEN NEW.raw_user_meta_data IS NOT NULL AND NEW.raw_user_meta_data ? 'name' 
+          THEN NEW.raw_user_meta_data->>'name'
+          ELSE split_part(NEW.email, '@', 1)
+        END,
+        split_part(NEW.email, '@', 1)
+      )
+    );
+    
+    -- Re-enable RLS
+    PERFORM set_config('row_security', 'on', true);
+    
+  EXCEPTION WHEN OTHERS THEN
+    -- If profile creation fails, log but don't block user creation
+    RAISE WARNING 'Failed to create profile for user %: %', NEW.id, SQLERRM;
+    -- Re-enable RLS even in case of error
+    PERFORM set_config('row_security', 'on', true);
+  END;
   RETURN NEW;
 END;
 $$ LANGUAGE 'plpgsql' SECURITY DEFINER;

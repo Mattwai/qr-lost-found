@@ -42,6 +42,7 @@ export const db = {
             qr_code: itemData.qrCode,
             name: itemData.name,
             owner_name: itemData.ownerName || null,
+            owner_email: user.email || '',
             status: itemData.status,
             registered_at: itemData.registeredAt,
           },
