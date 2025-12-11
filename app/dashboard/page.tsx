@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { generateQRUrl, type ItemData } from "@/lib/config";
-import { db, auth } from "@/lib/supabase";
+import { auth, db } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function DashboardPage() {
 
   const updateItemStatus = async (
     itemId: string,
-    newStatus: ItemData["status"],
+    newStatus: ItemData["status"]
   ) => {
     // Update in Supabase
     if (newStatus === "active") {
@@ -63,7 +63,7 @@ export default function DashboardPage() {
 
   const handleDeleteItem = async (itemId: string, itemName: string) => {
     const confirmed = confirm(
-      `Are you sure you want to unlink "${itemName}"?\n\nThis will permanently remove this QR code from your account. The QR code can be re-registered later.`,
+      `Are you sure you want to unlink "${itemName}"?\n\nThis will permanently remove this QR code from your account. The QR code can be re-registered later.`
     );
 
     if (!confirmed) return;
@@ -96,17 +96,17 @@ export default function DashboardPage() {
     checkAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await loadUserItems();
-        } else {
-          setUser(null);
-          router.push("/login");
-        }
+    const {
+      data: { subscription },
+    } = auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        await loadUserItems();
+      } else {
+        setUser(null);
+        router.push("/login");
       }
-    );
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           } else {
             const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
             const hours = Math.floor(
-              (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+              (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
             );
             newCountdowns[item.id] = { days, hours };
           }
@@ -222,7 +222,9 @@ export default function DashboardPage() {
                 My Dashboard
               </h1>
               <p className="text-gray-600">Logged in as: {user.email}</p>
-              <p className="text-sm text-gray-500">Name: {user.user_metadata?.name || 'Not provided'}</p>
+              <p className="text-sm text-gray-500">
+                Name: {user.user_metadata?.name || "Not provided"}
+              </p>
             </div>
             <button
               onClick={handleLogout}
@@ -308,7 +310,7 @@ export default function DashboardPage() {
                         {item.name}
                       </h3>
                       <p className="text-sm text-gray-500 font-mono">
-                        QR: {item.qrCode}
+                        QR: {item.qr_code}
                       </p>
                     </div>
                     {getStatusBadge(item.status)}
@@ -380,7 +382,7 @@ export default function DashboardPage() {
                           onClick={() => {
                             if (
                               confirm(
-                                "Are you sure this is a false report? This will reset the item to active status.",
+                                "Are you sure this is a false report? This will reset the item to active status."
                               )
                             ) {
                               updateItemStatus(item.id, "active");
@@ -428,9 +430,9 @@ export default function DashboardPage() {
                   <div className="flex gap-2 mt-4">
                     <button
                       onClick={() => {
-                        const qrUrl = generateVerificationQR(item.qrCode);
+                        const qrUrl = generateVerificationQR(item.qr_code);
                         alert(
-                          `Show this QR code at pickup:\n\n${qrUrl}\n\nOr scan this in the app to verify ownership.`,
+                          `Show this QR code at pickup:\n\n${qrUrl}\n\nOr scan this in the app to verify ownership.`
                         );
                       }}
                       className="flex-1 px-4 py-3 rounded-lg font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all"
@@ -438,7 +440,7 @@ export default function DashboardPage() {
                       📱 Show Verification QR
                     </button>
                     <button
-                      onClick={() => router.push(`/found?qr=${item.qrCode}`)}
+                      onClick={() => router.push(`/found?qr=${item.qr_code}`)}
                       className="flex-1 px-4 py-3 rounded-lg font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all"
                     >
                       👁️ View Public Page
@@ -448,7 +450,7 @@ export default function DashboardPage() {
                   {/* Unlink Button */}
                   <div className="mt-3 pt-3 border-t border-gray-200">
                     <button
-                      onClick={() => handleDeleteItem(item.qrCode, item.name)}
+                      onClick={() => handleDeleteItem(item.qr_code, item.name)}
                       className="w-full px-4 py-2 rounded-lg font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-all text-sm"
                     >
                       🗑️ Unlink QR Code
