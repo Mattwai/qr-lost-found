@@ -61,6 +61,24 @@ export default function DashboardPage() {
     if (userEmail) await loadUserItems(userEmail);
   };
 
+  const handleDeleteItem = async (itemId: string, itemName: string) => {
+    const confirmed = confirm(
+      `Are you sure you want to unlink "${itemName}"?\n\nThis will permanently remove this QR code from your account. The QR code can be re-registered later.`,
+    );
+
+    if (!confirmed) return;
+
+    // Delete from Supabase
+    const success = await db.deleteItem(itemId);
+
+    if (success) {
+      // Reload items
+      if (userEmail) await loadUserItems(userEmail);
+    } else {
+      alert("Failed to unlink item. Please try again.");
+    }
+  };
+
   useEffect(() => {
     // Check if user is logged in
     const storedEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL);
@@ -444,6 +462,16 @@ export default function DashboardPage() {
                       className="flex-1 px-4 py-3 rounded-lg font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all"
                     >
                       👁️ View Public Page
+                    </button>
+                  </div>
+
+                  {/* Unlink Button */}
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <button
+                      onClick={() => handleDeleteItem(item.qrCode, item.name)}
+                      className="w-full px-4 py-2 rounded-lg font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-all text-sm"
+                    >
+                      🗑️ Unlink QR Code
                     </button>
                   </div>
                 </div>

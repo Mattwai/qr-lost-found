@@ -80,6 +80,11 @@ CREATE POLICY "Anyone can update items" ON items
   FOR UPDATE
   USING (true);
 
+-- Create policy: Anyone can delete items (for unlinking QR codes)
+CREATE POLICY "Anyone can delete items" ON items
+  FOR DELETE
+  USING (true);
+
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
