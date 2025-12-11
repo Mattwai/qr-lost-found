@@ -10,9 +10,15 @@ function RegisterPageContent() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [qrCode] = useState<string>(() => {
+  const [qrCode, setQrCode] = useState<string | null>(() => {
     const qrParam = searchParams.get("qr");
-    return qrParam || `QR-${Date.now()}`;
+    // Validate QR code format: must be UUID format (QR-{UUID})
+    const uuidRegex =
+      /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+    if (qrParam && uuidRegex.test(qrParam)) {
+      return qrParam;
+    }
+    return null; // No valid QR code provided
   });
 
   const [formData, setFormData] = useState({
@@ -74,6 +80,13 @@ function RegisterPageContent() {
       return;
     }
 
+    // At this point, qrCode is guaranteed to be non-null due to early return check
+    if (!qrCode) {
+      setError("Invalid QR code.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const itemData = {
       id: qrCode,
       qrCode: qrCode,
@@ -118,6 +131,46 @@ function RegisterPageContent() {
   // If no user, useEffect will redirect to login
   if (!user) {
     return null;
+  }
+
+  // If no valid QR code provided, show error
+  if (!qrCode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="max-w-2xl mx-auto p-4 py-8 space-y-6">
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Invalid QR Code
+            </h1>
+            <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200 mb-6">
+              <h3 className="font-bold text-yellow-900 mb-2">
+                📱 How to Register
+              </h3>
+              <ol className="text-sm text-yellow-800 text-left space-y-1">
+                <li>1. Scan a valid QR code with your phone camera</li>
+                <li>2. The QR code must redirect to this website</li>
+                <li>3. You'll then be able to register the item</li>
+              </ol>
+            </div>
+            <div className="flex gap-4">
+              <a
+                href="/scan"
+                className="flex-1 px-6 py-3 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+              >
+                Scan QR Code
+              </a>
+              <a
+                href="/dashboard"
+                className="flex-1 px-6 py-3 rounded-lg text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all"
+              >
+                My Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (showSuccess) {

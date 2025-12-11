@@ -66,11 +66,35 @@ export const DROP_OFF_LOCATIONS: Location[] = [
 ];
 
 // Helper function to generate QR code URL
-// Generates URL in format: https://qr-lost-found.vercel.app/QR-1765460594356
+// Generates URL in format: https://qr-lost-found.vercel.app/QR-{UUID}
 // This allows scanning with normal phone camera (no app needed)
 // Next.js redirects /QR-:id to /found?qr=QR-:id
 export const generateQRUrl = (qrCode: string): string => {
   return `${CONFIG.DOMAIN}/${qrCode}`;
+};
+
+// Helper function to validate QR URL format
+// Only accepts URLs from the correct domain with UUID format QR codes
+export const isValidQRUrl = (url: string): boolean => {
+  const expectedPrefix = `${CONFIG.DOMAIN}/QR-`;
+  if (!url.startsWith(expectedPrefix)) {
+    return false;
+  }
+  
+  // Extract QR code from URL
+  const qrCode = url.substring(CONFIG.DOMAIN.length + 1);
+  
+  // Validate UUID format: QR-{UUID}
+  const uuidRegex = /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+  return uuidRegex.test(qrCode);
+};
+
+// Helper function to extract QR code from valid URL
+export const extractQRCodeFromUrl = (url: string): string | null => {
+  if (!isValidQRUrl(url)) {
+    return null;
+  }
+  return url.substring(CONFIG.DOMAIN.length + 1);
 };
 
 // Helper function to calculate expiry date

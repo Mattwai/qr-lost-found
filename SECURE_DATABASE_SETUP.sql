@@ -322,10 +322,10 @@ ALTER TABLE items
 ADD CONSTRAINT check_status 
 CHECK (status IN ('active', 'reportedFound', 'droppedOff', 'pickedUp', 'expired'));
 
--- QR code format validation (optional)
+-- QR code format validation (UUID format only)
 ALTER TABLE items 
 ADD CONSTRAINT check_qr_code_format 
-CHECK (qr_code ~ '^QR-[0-9]+$');
+CHECK (qr_code ~ '^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$');
 
 -- ================================
 -- STEP 11: Set up proper permissions
