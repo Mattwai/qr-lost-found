@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
-import { STORAGE_KEYS } from "@/lib/config";
+import { db } from "@/lib/supabase";
 
 function RegisterPageContent() {
   const searchParams = useSearchParams();
@@ -17,9 +17,13 @@ function RegisterPageContent() {
     ownerEmail: "",
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
 
     const itemData = {
       id: qrCode,
@@ -31,13 +35,16 @@ function RegisterPageContent() {
       registeredAt: new Date().toISOString(),
     };
 
-    // Store in localStorage
-    const items = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
-    );
-    items[qrCode] = itemData;
-    localStorage.setItem(STORAGE_KEYS.QR_ITEMS, JSON.stringify(items));
+    // Save to Supabase
+    const savedItem = await db.registerItem(itemData);
 
+    if (!savedItem) {
+      setError("Failed to register item. Please try again.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    setIsSubmitting(false);
     setShowSuccess(true);
   };
 
@@ -183,11 +190,22 @@ function RegisterPageContent() {
               />
             </div>
 
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-red-800">❌ {error}</p>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all"
+              disabled={isSubmitting}
+              className={`w-full py-4 rounded-xl font-semibold text-white text-lg transition-all ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              Register Item
+              {isSubmitting ? "Registering..." : "Register Item"}
             </button>
           </form>
         </div>

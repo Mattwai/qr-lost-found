@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { generateQRUrl, type ItemData, STORAGE_KEYS } from "@/lib/config";
+import { db } from "@/lib/supabase";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -15,13 +16,9 @@ export default function DashboardPage() {
     [key: string]: { days: number; hours: number };
   }>({});
 
-  const loadUserItems = (email: string) => {
-    const allItems = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
-    );
-    const userItems = Object.values(allItems).filter(
-      (item: unknown) => (item as ItemData).ownerEmail === email,
-    ) as ItemData[];
+  const loadUserItems = async (email: string) => {
+    // Fetch from Supabase
+    const userItems = await db.getItemsByEmail(email);
 
     // Sort by status priority and date
     const sortedItems = userItems.sort((a, b) => {
@@ -44,26 +41,24 @@ export default function DashboardPage() {
     setItems(sortedItems);
   };
 
-  const updateItemStatus = (itemId: string, newStatus: ItemData["status"]) => {
-    const allItems = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
-    );
-    if (allItems[itemId]) {
-      allItems[itemId].status = newStatus;
-
-      if (newStatus === "pickedUp") {
-        allItems[itemId].pickedUpAt = new Date().toISOString();
-      } else if (newStatus === "active") {
-        // Reset to active (false alarm)
-        delete allItems[itemId].reportedFoundAt;
-        delete allItems[itemId].droppedOffAt;
-        delete allItems[itemId].expiresAt;
-        delete allItems[itemId].location;
-      }
-
-      localStorage.setItem(STORAGE_KEYS.QR_ITEMS, JSON.stringify(allItems));
-      if (userEmail) loadUserItems(userEmail);
+  const updateItemStatus = async (
+    itemId: string,
+    newStatus: ItemData["status"],
+  ) => {
+    // Update in Supabase
+    if (newStatus === "active") {
+      // Reset to active (false alarm)
+      await db.resetItemToActive(itemId);
+    } else if (newStatus === "pickedUp") {
+      await db.updateItemStatus(itemId, newStatus, {
+        pickedUpAt: new Date().toISOString(),
+      });
+    } else {
+      await db.updateItemStatus(itemId, newStatus);
     }
+
+    // Reload items
+    if (userEmail) await loadUserItems(userEmail);
   };
 
   useEffect(() => {

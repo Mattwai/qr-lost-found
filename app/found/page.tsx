@@ -3,12 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import {
-  DROP_OFF_LOCATIONS,
-  type ItemData,
-  type Location,
-  STORAGE_KEYS,
-} from "@/lib/config";
+import { DROP_OFF_LOCATIONS, type ItemData, type Location } from "@/lib/config";
+import { db } from "@/lib/supabase";
 
 type ViewState =
   | "notRegistered"
@@ -31,13 +27,11 @@ function FoundPageContent() {
   );
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
 
-  const loadItemData = () => {
+  const loadItemData = async () => {
     if (!qrCode) return;
 
-    const items = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
-    );
-    const item = items[qrCode];
+    // Fetch from Supabase
+    const item = await db.getItemByQrCode(qrCode);
 
     if (!item) {
       setViewState("notRegistered");
@@ -68,28 +62,24 @@ function FoundPageContent() {
     }
   };
 
-  const updateItemStatus = (newStatus: ItemData["status"]) => {
+  const updateItemStatus = async (newStatus: ItemData["status"]) => {
     if (!qrCode) return;
 
-    const items = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.QR_ITEMS) || "{}",
-    );
-    if (items[qrCode]) {
-      items[qrCode].status = newStatus;
+    // Update in Supabase
+    const additionalData: any = {};
 
-      if (newStatus === "reportedFound") {
-        items[qrCode].reportedFoundAt = new Date().toISOString();
-      } else if (newStatus === "droppedOff" && selectedLocation) {
-        items[qrCode].droppedOffAt = new Date().toISOString();
-        items[qrCode].expiresAt = new Date(
-          Date.now() + 7 * 24 * 60 * 60 * 1000,
-        ).toISOString();
-        items[qrCode].location = selectedLocation;
-      }
-
-      localStorage.setItem(STORAGE_KEYS.QR_ITEMS, JSON.stringify(items));
-      loadItemData();
+    if (newStatus === "reportedFound") {
+      additionalData.reportedFoundAt = new Date().toISOString();
+    } else if (newStatus === "droppedOff" && selectedLocation) {
+      additionalData.droppedOffAt = new Date().toISOString();
+      additionalData.expiresAt = new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      additionalData.location = selectedLocation;
     }
+
+    await db.updateItemStatus(qrCode, newStatus, additionalData);
+    await loadItemData();
   };
 
   useEffect(() => {
