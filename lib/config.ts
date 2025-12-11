@@ -25,21 +25,21 @@ export interface Location {
 export const DROP_OFF_LOCATIONS: Location[] = [
   {
     id: 1,
-    name: "Central Library",
-    address: "123 Main Street, Downtown",
+    name: "Fudan University, Teaching Building 6, Room 101",
+    address: "复旦大学邯郸校区第六教学楼",
     phone: "555-0101",
     coordinates: {
       lat: 40.7128,
-      lng: -74.0060,
+      lng: -74.006,
     },
   },
   {
     id: 2,
-    name: "City Police Station",
-    address: "456 Oak Avenue, City Center",
+    name: "Fudan University, South Canteen",
+    address: "复旦大学邯郸校区教工食堂",
     phone: "555-0102",
     coordinates: {
-      lat: 40.7580,
+      lat: 40.758,
       lng: -73.9855,
     },
   },
@@ -50,7 +50,7 @@ export const DROP_OFF_LOCATIONS: Location[] = [
     phone: "555-0103",
     coordinates: {
       lat: 40.7489,
-      lng: -73.9680,
+      lng: -73.968,
     },
   },
   {
@@ -83,7 +83,12 @@ export const getLocationById = (id: number): Location | undefined => {
 };
 
 // Item status types
-export type ItemStatus = "active" | "reportedFound" | "droppedOff" | "pickedUp" | "expired";
+export type ItemStatus =
+  | "active"
+  | "reportedFound"
+  | "droppedOff"
+  | "pickedUp"
+  | "expired";
 
 // Item data interface
 export interface ItemData {

@@ -193,12 +193,20 @@ function FoundPageContent() {
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">👋</div>
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                This Item Belongs To
-              </h1>
-              <p className="text-3xl font-bold text-blue-600 mb-4">
-                {itemData.ownerName}
-              </p>
+              {itemData.ownerName ? (
+                <>
+                  <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                    This Item Belongs To
+                  </h1>
+                  <p className="text-3xl font-bold text-blue-600 mb-4">
+                    {itemData.ownerName}
+                  </p>
+                </>
+              ) : (
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">
+                  Lost Item Found
+                </h1>
+              )}
               <p className="text-gray-600">
                 If you found this item, please help return it!
               </p>

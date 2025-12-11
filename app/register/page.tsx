@@ -108,7 +108,7 @@ function RegisterPageContent() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Register Your QR Code
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-800">
             Protect your items with QR Lost & Found
           </p>
         </div>
@@ -117,7 +117,7 @@ function RegisterPageContent() {
         <div className="bg-white rounded-2xl shadow-xl p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">🏷️ QR Code</h2>
           <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-2">QR Code ID:</p>
+            <p className="text-sm text-gray-800 mb-2">QR Code ID:</p>
             <p className="text-lg font-mono font-bold text-gray-800">
               {qrCode}
             </p>
@@ -133,7 +133,7 @@ function RegisterPageContent() {
             <div>
               <label
                 htmlFor="itemName"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-900 mb-2"
               >
                 Item Name *
               </label>
@@ -144,32 +144,31 @@ function RegisterPageContent() {
                 value={formData.itemName}
                 onChange={handleChange}
                 placeholder="e.g., Black Backpack, Water Bottle"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 focus:border-blue-500 focus:outline-none"
+                className="w-full border-2 border-gray-200 rounded-lg p-3 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
             <div>
               <label
                 htmlFor="ownerName"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-900 mb-2"
               >
-                Your Name *
+                Your Name (optional)
               </label>
               <input
                 type="text"
                 id="ownerName"
-                required
                 value={formData.ownerName}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 focus:border-blue-500 focus:outline-none"
+                className="w-full border-2 border-gray-200 rounded-lg p-3 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
             <div>
               <label
                 htmlFor="ownerEmail"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-900 mb-2"
               >
                 Your Email *
               </label>
@@ -180,7 +179,7 @@ function RegisterPageContent() {
                 value={formData.ownerEmail}
                 onChange={handleChange}
                 placeholder="john@example.com"
-                className="w-full border-2 border-gray-200 rounded-lg p-3 focus:border-blue-500 focus:outline-none"
+                className="w-full border-2 border-gray-200 rounded-lg p-3 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
@@ -199,7 +198,7 @@ function RegisterPageContent() {
             <div className="text-3xl mr-4">💡</div>
             <div>
               <h3 className="font-bold text-yellow-900 mb-2">Next Steps</h3>
-              <p className="text-sm text-yellow-800">
+              <p className="text-sm text-gray-800">
                 After registration, keep this QR code on your item. If someone
                 finds it, they can scan it with their phone camera to help
                 return it to you!
@@ -210,7 +209,7 @@ function RegisterPageContent() {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-800 text-sm">
             Powered by <strong>QR Lost & Found</strong> 📱
           </p>
         </div>
