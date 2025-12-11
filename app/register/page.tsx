@@ -12,14 +12,40 @@ function RegisterPageContent() {
   const [loading, setLoading] = useState(true);
   const [qrCode, setQrCode] = useState<string | null>(() => {
     const qrParam = searchParams.get("qr");
+    if (!qrParam) return null;
+
+    // Extract QR code from URL if it's a full URL
+    let qrCodeId = qrParam;
+    if (qrParam.includes("://") || qrParam.includes("/")) {
+      // Extract the QR code part - look for QR- pattern in the URL
+      const qrMatch = qrParam.match(/QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+      if (qrMatch) {
+        qrCodeId = qrMatch[0];
+      } else {
+        // Fallback: extract the last part after the last slash
+        qrCodeId = qrParam.substring(qrParam.lastIndexOf("/") + 1);
+      }
+    }
+
     // Validate QR code format: must be UUID format (QR-{UUID})
     const uuidRegex =
       /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-    if (qrParam && uuidRegex.test(qrParam)) {
-      return qrParam;
+    if (uuidRegex.test(qrCodeId)) {
+      return qrCodeId.toLowerCase(); // Convert to lowercase to match database constraint
     }
     return null; // No valid QR code provided
   });
+
+  // Redirect URL to clean QR parameter if needed
+  useEffect(() => {
+    const qrParam = searchParams.get("qr");
+    if (qrParam && qrCode && qrParam !== qrCode) {
+      // Clean up URL - replace the full URL with just the QR code
+      const url = new URL(window.location.href);
+      url.searchParams.set('qr', qrCode);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [qrCode, searchParams]);
 
   const [formData, setFormData] = useState({
     itemName: "",
@@ -81,6 +107,7 @@ function RegisterPageContent() {
     }
 
     // At this point, qrCode is guaranteed to be non-null due to early return check
+    console.log("Registering item with QR code:", qrCode);
     if (!qrCode) {
       setError("Invalid QR code.");
       setIsSubmitting(false);
@@ -88,7 +115,6 @@ function RegisterPageContent() {
     }
 
     const itemData = {
-      id: qrCode,
       qrCode: qrCode,
       name: formData.itemName,
       ownerName: formData.ownerName,

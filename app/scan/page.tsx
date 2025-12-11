@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 export default function ScanPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -60,7 +60,7 @@ export default function ScanPage() {
             if (err && !(err.name === "NotFoundException")) {
               console.error("Scan error:", err);
             }
-          },
+          }
         );
       }
     } catch (err) {
@@ -71,7 +71,7 @@ export default function ScanPage() {
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
           setError(
-            "Camera permission denied. Please allow camera access to scan QR codes.",
+            "Camera permission denied. Please allow camera access to scan QR codes."
           );
         } else if (err.name === "NotFoundError") {
           setError("No camera found on this device.");
