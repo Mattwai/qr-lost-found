@@ -63,11 +63,6 @@ function RegisterPageContent() {
       const currentUser = await auth.getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
-        // Pre-fill owner name from user metadata
-        setFormData((prev) => ({
-          ...prev,
-          ownerName: currentUser.user_metadata?.name || "",
-        }));
       } else {
         router.push("/login?redirect=/register");
       }
@@ -82,10 +77,6 @@ function RegisterPageContent() {
     } = auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
-        setFormData((prev) => ({
-          ...prev,
-          ownerName: session.user.user_metadata?.name || "",
-        }));
       } else {
         setUser(null);
         router.push("/login?redirect=/register");

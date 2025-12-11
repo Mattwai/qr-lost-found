@@ -199,7 +199,7 @@ function FoundPageContent() {
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">👋</div>
-              {itemData.ownerName ? (
+              {itemData.ownerName && itemData.ownerName.trim() ? (
                 <>
                   <h1 className="text-2xl font-bold text-gray-800 mb-2">
                     This Item Belongs To

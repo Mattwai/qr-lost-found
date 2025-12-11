@@ -7,7 +7,6 @@ import { Suspense, useState } from "react";
 
 function SignUpPageContent() {
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -25,7 +24,6 @@ function SignUpPageContent() {
 
     // Validation
     if (
-      !formData.name ||
       !formData.email ||
       !formData.password ||
       !formData.confirmPassword
@@ -45,8 +43,7 @@ function SignUpPageContent() {
     try {
       const { user, error: signUpError } = await auth.signUp(
         formData.email,
-        formData.password,
-        formData.name
+        formData.password
       );
 
       if (signUpError) {
@@ -96,25 +93,6 @@ function SignUpPageContent() {
           )}
 
           <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={handleInputChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your full name"
-              />
-            </div>
-
             <div>
               <label
                 htmlFor="email"

@@ -269,9 +269,6 @@ export default function DashboardPage() {
                 My Dashboard
               </h1>
               <p className="text-gray-600">Logged in as: {user.email}</p>
-              <p className="text-sm text-gray-500">
-                Name: {user.user_metadata?.name || "Not provided"}
-              </p>
             </div>
             <button
               onClick={handleLogout}
@@ -337,12 +334,6 @@ export default function DashboardPage() {
               <p className="text-gray-600 mb-6">
                 Scan a QR code to register your first item!
               </p>
-              <a
-                href="/scan"
-                className="inline-block px-8 py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all"
-              >
-                📷 Scan QR Code
-              </a>
             </div>
           ) : (
             <div className="space-y-4">

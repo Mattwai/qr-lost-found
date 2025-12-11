@@ -267,18 +267,12 @@ export const auth = {
   // Sign up a new user
   async signUp(
     email: string,
-    password: string,
-    name?: string
+    password: string
   ): Promise<{ user: User | null; error: string | null }> {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            name: name || "",
-          },
-        },
       });
 
       if (error) {
