@@ -744,5 +744,9 @@ export const translations = {
       en: "Loading...",
       zh: "加载中...",
     },
+    invalidQRFormat: {
+      en: "Invalid QR code format",
+      zh: "二维码格式无效",
+    },
   },
 } as const;

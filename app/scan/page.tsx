@@ -5,6 +5,7 @@ import { BrowserMultiFormatReader } from "@zxing/library";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import LanguageSwitch from "../components/languageSwitchButton";
+import { extractQRCode, encodeQRForURL } from "@/lib/qr-utils";
 
 export default function ScanPage() {
   const { t } = useTranslation();
@@ -50,14 +51,23 @@ export default function ScanPage() {
           videoRef.current,
           (result, err) => {
             if (result) {
-              const qrCode = result.getText();
-              console.log("QR Code detected:", qrCode);
+              const rawQrCode = result.getText();
+              console.log("Raw QR Code detected:", rawQrCode);
 
-              // Stop scanning
-              stopScanning();
+              // Extract clean QR code
+              const cleanQrCode = extractQRCode(rawQrCode);
+              console.log("Extracted QR Code:", cleanQrCode);
 
-              // Navigate to found page
-              router.push(`/found?qr=${qrCode}`);
+              if (cleanQrCode) {
+                // Stop scanning
+                stopScanning();
+
+                // Navigate to found page with clean QR code
+                router.push(`/found?qr=${encodeQRForURL(cleanQrCode)}`);
+              } else {
+                console.error("Could not extract valid QR code from:", rawQrCode);
+                setError(t("found", "invalidQRFormat"));
+              }
             }
 
             if (err && !(err.name === "NotFoundException")) {
@@ -100,7 +110,12 @@ export default function ScanPage() {
   const handleManualEntry = () => {
     const code = prompt(t("scan", "manualEntryPrompt"));
     if (code) {
-      router.push(`/found?qr=${code}`);
+      const cleanQrCode = extractQRCode(code);
+      if (cleanQrCode) {
+        router.push(`/found?qr=${encodeQRForURL(cleanQrCode)}`);
+      } else {
+        setError(t("found", "invalidQRFormat"));
+      }
     }
   };
 

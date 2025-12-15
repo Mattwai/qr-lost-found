@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import LanguageSwitch from "../components/languageSwitchButton";
+import { extractQRCode, isValidQRCode } from "@/lib/qr-utils";
 
 type ViewState =
   | "loading"
@@ -22,7 +23,10 @@ type ViewState =
 function FoundPageContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
-  const qrCode = searchParams.get("qr") || null;
+  const rawQrParam = searchParams.get("qr");
+  
+  // Extract clean QR code from the parameter
+  const qrCode = rawQrParam ? extractQRCode(rawQrParam) : null;
 
   const [viewState, setViewState] = useState<ViewState>("loading");
   const [itemData, setItemData] = useState<ItemData | null>(null);
@@ -32,7 +36,13 @@ function FoundPageContent() {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
 
   const loadItemData = async () => {
-    if (!qrCode) return;
+    if (!qrCode || !isValidQRCode(qrCode)) {
+      console.error("Invalid QR code:", qrCode);
+      setViewState("notRegistered");
+      return;
+    }
+
+    console.log("Loading item data for QR code:", qrCode);
 
     // Fetch from Supabase
     const item = await db.getItemByQrCode(qrCode);

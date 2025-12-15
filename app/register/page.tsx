@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import LanguageSwitch from "../components/languageSwitchButton";
+import { extractQRCode, isValidQRCode } from "@/lib/qr-utils";
 
 function RegisterPageContent() {
   const { t } = useTranslation();
@@ -17,26 +18,12 @@ function RegisterPageContent() {
     const qrParam = searchParams.get("qr");
     if (!qrParam) return null;
 
-    // Extract QR code from URL if it's a full URL
-    let qrCodeId = qrParam;
-    if (qrParam.includes("://") || qrParam.includes("/")) {
-      // Extract the QR code part - look for QR- pattern in the URL
-      const qrMatch = qrParam.match(
-        /QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i
-      );
-      if (qrMatch) {
-        qrCodeId = qrMatch[0];
-      } else {
-        // Fallback: extract the last part after the last slash
-        qrCodeId = qrParam.substring(qrParam.lastIndexOf("/") + 1);
-      }
-    }
-
-    // Validate QR code format: must be UUID format (QR-{UUID})
-    const uuidRegex =
-      /^QR-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-    if (uuidRegex.test(qrCodeId)) {
-      return qrCodeId;
+    // Extract clean QR code using utility function
+    const cleanQrCode = extractQRCode(qrParam);
+    
+    // Validate QR code format
+    if (isValidQRCode(cleanQrCode)) {
+      return cleanQrCode;
     }
     return null; // No valid QR code provided
   });
@@ -67,7 +54,9 @@ function RegisterPageContent() {
       if (currentUser) {
         setUser(currentUser);
       } else {
-        router.push("/login?redirect=/register");
+        // Preserve QR code in redirect
+        const currentUrl = window.location.pathname + window.location.search;
+        router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`);
       }
       setLoading(false);
     };
@@ -82,7 +71,9 @@ function RegisterPageContent() {
         setUser(session.user);
       } else {
         setUser(null);
-        router.push("/login?redirect=/register");
+        // Preserve QR code in redirect
+        const currentUrl = window.location.pathname + window.location.search;
+        router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`);
       }
     });
 
