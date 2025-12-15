@@ -357,6 +357,42 @@ export const auth = {
     return supabase.auth.onAuthStateChange(callback);
   },
 
+  // Send password reset email
+  async sendPasswordResetEmail(email: string): Promise<{ error: string | null }> {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        return { error: error.message };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error("Exception during password reset:", error);
+      return { error: "An unexpected error occurred" };
+    }
+  },
+
+  // Update user password (used after reset)
+  async updatePassword(newPassword: string): Promise<{ error: string | null }> {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        return { error: error.message };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error("Exception during password update:", error);
+      return { error: "An unexpected error occurred" };
+    }
+  },
+
   // Check if user is authenticated
   async isAuthenticated(): Promise<boolean> {
     const session = await this.getCurrentSession();

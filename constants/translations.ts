@@ -133,6 +133,110 @@ export const translations = {
       zh: "请输入邮箱和密码",
     },
   },
+  forgotPassword: {
+    title: {
+      en: "Reset your password",
+      zh: "重置您的密码",
+    },
+    subtitle: {
+      en: "Enter your email address and we'll send you a link to reset your password",
+      zh: "输入您的邮箱地址，我们将向您发送重置密码的链接",
+    },
+    sendResetLink: {
+      en: "Send reset link",
+      zh: "发送重置链接",
+    },
+    sendingLink: {
+      en: "Sending...",
+      zh: "发送中...",
+    },
+    backToLogin: {
+      en: "Back to login",
+      zh: "返回登录",
+    },
+    emailRequired: {
+      en: "Please enter your email address",
+      zh: "请输入您的邮箱地址",
+    },
+    resetLinkSent: {
+      en: "Password reset link sent!",
+      zh: "密码重置链接已发送！",
+    },
+    resetLinkSentDescription: {
+      en: "We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.",
+      zh: "我们已向您的邮箱发送了密码重置链接。请检查您的收件箱并按照说明重置密码。",
+    },
+    checkSpam: {
+      en: "Don't see the email? Check your spam folder or try again.",
+      zh: "没有收到邮件？请检查垃圾邮件文件夹或重新尝试。",
+    },
+    invalidEmail: {
+      en: "Please enter a valid email address",
+      zh: "请输入有效的邮箱地址",
+    },
+    resetFailed: {
+      en: "Failed to send reset link. Please try again.",
+      zh: "发送重置链接失败。请重试。",
+    },
+    sendAgain: {
+      en: "Send Again",
+      zh: "重新发送",
+    },
+  },
+  resetPassword: {
+    title: {
+      en: "Set new password",
+      zh: "设置新密码",
+    },
+    subtitle: {
+      en: "Enter your new password below",
+      zh: "在下方输入您的新密码",
+    },
+    newPassword: {
+      en: "New password",
+      zh: "新密码",
+    },
+    confirmNewPassword: {
+      en: "Confirm new password",
+      zh: "确认新密码",
+    },
+    updatePassword: {
+      en: "Update password",
+      zh: "更新密码",
+    },
+    updating: {
+      en: "Updating...",
+      zh: "更新中...",
+    },
+    passwordsRequired: {
+      en: "Please enter and confirm your new password",
+      zh: "请输入并确认您的新密码",
+    },
+    passwordsMismatch: {
+      en: "Passwords do not match",
+      zh: "密码不匹配",
+    },
+    passwordMinLength: {
+      en: "Password must be at least 6 characters",
+      zh: "密码至少需要6个字符",
+    },
+    passwordUpdated: {
+      en: "Password updated successfully!",
+      zh: "密码更新成功！",
+    },
+    passwordUpdatedDescription: {
+      en: "Your password has been updated. You can now sign in with your new password.",
+      zh: "您的密码已更新。现在您可以使用新密码登录。",
+    },
+    updateFailed: {
+      en: "Failed to update password. Please try again.",
+      zh: "更新密码失败。请重试。",
+    },
+    invalidSession: {
+      en: "Invalid or expired reset link. Please request a new one.",
+      zh: "重置链接无效或已过期。请重新申请。",
+    },
+  },
   scan: {
     title: {
       en: "Scan QR Code",
