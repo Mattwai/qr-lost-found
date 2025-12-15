@@ -6,8 +6,11 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import LanguageSwitch from "../components/languageSwitchButton";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ItemData[]>([]);
@@ -71,7 +74,7 @@ export default function DashboardPage() {
 
   const handleDeleteItem = async (itemId: string, itemName: string) => {
     const confirmed = confirm(
-      `Are you sure you want to unlink "${itemName}"?\n\nThis will permanently remove this QR code from your account. The QR code can be re-registered later.`
+      t("dashboard", "confirmUnlink").replace("{itemName}", itemName)
     );
 
     if (!confirmed) return;
@@ -83,7 +86,7 @@ export default function DashboardPage() {
       // Reload items
       await loadUserItems(user ?? undefined);
     } else {
-      alert("Failed to unlink item. Please try again.");
+      alert(t("dashboard", "unlinkFailed"));
     }
   };
 
@@ -204,31 +207,31 @@ export default function DashboardPage() {
       case "active":
         return (
           <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-            ✅ Active
+            {t("dashboard", "statusActive")}
           </span>
         );
       case "reportedFound":
         return (
           <span className="px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">
-            ⚠️ Reported Found
+            {t("dashboard", "statusReportedFound")}
           </span>
         );
       case "droppedOff":
         return (
           <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
-            📦 Dropped Off
+            {t("dashboard", "statusDroppedOff")}
           </span>
         );
       case "pickedUp":
         return (
           <span className="px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-800">
-            ✅ Picked Up
+            {t("dashboard", "statusPickedUp")}
           </span>
         );
       case "expired":
         return (
           <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
-            ⏰ Expired
+            {t("dashboard", "statusExpired")}
           </span>
         );
       default:
@@ -259,22 +262,25 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
       <div className="max-w-6xl mx-auto p-4 py-8">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-1">
-                My Dashboard
+                {t("dashboard", "title")}
               </h1>
-              <p className="text-gray-600">Logged in as: {user.email}</p>
+              <p className="text-gray-600">{t("dashboard", "loggedInAs")} {user.email}</p>
             </div>
             <button
               onClick={handleLogout}
               className="px-6 py-3 rounded-lg font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all"
             >
-              Logout
+              {t("dashboard", "logout")}
             </button>
           </div>
         </div>
@@ -283,28 +289,28 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="text-3xl mb-2">✅</div>
-            <p className="text-sm text-gray-600">Active Items</p>
+            <p className="text-sm text-gray-600">{t("dashboard", "activeItems")}</p>
             <p className="text-2xl font-bold text-gray-800">
               {items.filter((i) => i.status === "active").length}
             </p>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="text-3xl mb-2">⚠️</div>
-            <p className="text-sm text-gray-600">Reported Found</p>
+            <p className="text-sm text-gray-600">{t("dashboard", "reportedFound")}</p>
             <p className="text-2xl font-bold text-yellow-600">
               {items.filter((i) => i.status === "reportedFound").length}
             </p>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="text-3xl mb-2">📦</div>
-            <p className="text-sm text-gray-600">Awaiting Pickup</p>
+            <p className="text-sm text-gray-600">{t("dashboard", "awaitingPickup")}</p>
             <p className="text-2xl font-bold text-blue-600">
               {items.filter((i) => i.status === "droppedOff").length}
             </p>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="text-3xl mb-2">🎉</div>
-            <p className="text-sm text-gray-600">Picked Up</p>
+            <p className="text-sm text-gray-600">{t("dashboard", "pickedUp")}</p>
             <p className="text-2xl font-bold text-green-600">
               {items.filter((i) => i.status === "pickedUp").length}
             </p>
@@ -315,13 +321,13 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl shadow-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              Your Items ({items.length})
+              {t("dashboard", "yourItems")} ({items.length})
             </h2>
             <a
               href="/scan"
               className="px-6 py-3 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 transition-all"
             >
-              📷 Scan QR Code
+              📷 {t("dashboard", "scanQRCode")}
             </a>
           </div>
 
@@ -329,10 +335,10 @@ export default function DashboardPage() {
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📦</div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">
-                No Items Yet
+                {t("dashboard", "noItemsYet")}
               </h3>
               <p className="text-gray-600 mb-6">
-                Scan a QR code to register your first item!
+                {t("dashboard", "scanToRegister")}
               </p>
             </div>
           ) : (
@@ -348,7 +354,7 @@ export default function DashboardPage() {
                         {item.name}
                       </h3>
                       <p className="text-sm text-gray-500 font-mono">
-                        QR: {item.qr_code}
+                        {t("dashboard", "qrCode")} {item.qr_code}
                       </p>
                     </div>
                     {getStatusBadge(item.status)}
@@ -358,15 +364,14 @@ export default function DashboardPage() {
                   {item.status === "reportedFound" && (
                     <div className="bg-yellow-50 rounded-lg p-4 mb-4 border border-yellow-200">
                       <p className="text-sm text-yellow-800 mb-3">
-                        ⚠️ Someone reported finding your item! They haven&apos;t
-                        dropped it off yet.
+                        {t("dashboard", "reportedFoundAlert")}
                       </p>
                       <div className="flex gap-2">
                         <button
                           onClick={() => updateItemStatus(item.id, "active")}
                           className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 transition-all"
                         >
-                          False Alarm - I Have It
+                          {t("dashboard", "falseAlarm")}
                         </button>
                       </div>
                     </div>
@@ -375,19 +380,19 @@ export default function DashboardPage() {
                   {item.status === "droppedOff" && item.location && (
                     <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-200">
                       <p className="text-sm font-semibold text-blue-900 mb-2">
-                        🚨 PICK UP YOUR ITEM!
+                        {t("dashboard", "pickupAlert")}
                       </p>
                       <p className="text-sm text-blue-800 mb-3">
-                        <strong>Location:</strong> {item.location.name}
+                        <strong>{t("dashboard", "location")}</strong> {item.location.name}
                         <br />
-                        <strong>Address:</strong> {item.location.address}
+                        <strong>{t("dashboard", "address")}</strong> {item.location.address}
                         <br />
-                        <strong>Phone:</strong> {item.location.phone}
+                        <strong>{t("dashboard", "phone")}</strong> {item.location.phone}
                       </p>
                       {countdown[item.id] && (
                         <div className="mb-3">
                           <p className="text-sm text-blue-800 mb-2">
-                            Time remaining:
+                            {t("dashboard", "timeRemaining")}
                           </p>
                           <div className="flex gap-2">
                             <div className="bg-white rounded px-3 py-1">
@@ -395,7 +400,7 @@ export default function DashboardPage() {
                                 {countdown[item.id].days}
                               </span>
                               <span className="text-xs text-gray-600 ml-1">
-                                days
+                                {t("dashboard", "days")}
                               </span>
                             </div>
                             <div className="bg-white rounded px-3 py-1">
@@ -403,7 +408,7 @@ export default function DashboardPage() {
                                 {countdown[item.id].hours}
                               </span>
                               <span className="text-xs text-gray-600 ml-1">
-                                hours
+                                {t("dashboard", "hours")}
                               </span>
                             </div>
                           </div>
@@ -414,13 +419,13 @@ export default function DashboardPage() {
                           onClick={() => updateItemStatus(item.id, "pickedUp")}
                           className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all"
                         >
-                          ✅ Mark as Picked Up
+                          {t("dashboard", "markPickedUp")}
                         </button>
                         <button
                           onClick={() => {
                             if (
                               confirm(
-                                "Are you sure this is a false report? This will reset the item to active status."
+                                t("dashboard", "confirmFalseReport")
                               )
                             ) {
                               updateItemStatus(item.id, "active");
@@ -428,7 +433,7 @@ export default function DashboardPage() {
                           }}
                           className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 transition-all"
                         >
-                          Report False Drop-off
+                          {t("dashboard", "reportFalseDropoff")}
                         </button>
                       </div>
                     </div>
@@ -437,14 +442,13 @@ export default function DashboardPage() {
                   {item.status === "pickedUp" && (
                     <div className="bg-green-50 rounded-lg p-4 mb-4 border border-green-200">
                       <p className="text-sm text-green-800 mb-2">
-                        ✅ This item was picked up on{" "}
-                        {new Date(item.pickedUpAt!).toLocaleDateString()}
+                        {t("dashboard", "pickedUpOn")} {new Date(item.pickedUpAt!).toLocaleDateString()}
                       </p>
                       <button
                         onClick={() => updateItemStatus(item.id, "active")}
                         className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 transition-all"
                       >
-                        Reset to Active
+                        {t("dashboard", "resetToActive")}
                       </button>
                     </div>
                   )}
@@ -452,14 +456,13 @@ export default function DashboardPage() {
                   {item.status === "expired" && (
                     <div className="bg-red-50 rounded-lg p-4 mb-4 border border-red-200">
                       <p className="text-sm text-red-800 mb-2">
-                        ⏰ Pickup period expired. The item may have been donated
-                        or discarded.
+                        {t("dashboard", "pickupExpiredAlert")}
                       </p>
                       <button
                         onClick={() => updateItemStatus(item.id, "active")}
                         className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 transition-all"
                       >
-                        Reset to Active
+                        {t("dashboard", "resetToActive")}
                       </button>
                     </div>
                   )}
@@ -470,7 +473,7 @@ export default function DashboardPage() {
                       onClick={() => handleDeleteItem(item.qr_code, item.name)}
                       className="w-full px-4 py-2 rounded-lg font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-all text-sm"
                     >
-                      🗑️ Unlink QR Code
+                      {t("dashboard", "unlinkQRCode")}
                     </button>
                   </div>
                 </div>
@@ -482,10 +485,10 @@ export default function DashboardPage() {
         {/* Footer */}
         <div className="text-center mt-8">
           <Link href="/" className="text-blue-600 hover:underline">
-            ← Back to Home
+            ← {t("scan", "backToHome")}
           </Link>
           <p className="text-gray-600 text-sm mt-4">
-            Powered by <strong>QR Lost & Found</strong> 📱
+            {t("common", "poweredBy")} 📱
           </p>
         </div>
       </div>

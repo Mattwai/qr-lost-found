@@ -4,8 +4,11 @@ import { auth, db } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import LanguageSwitch from "../components/languageSwitchButton";
 
 function RegisterPageContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -94,7 +97,7 @@ function RegisterPageContent() {
     setError(null);
 
     if (!user) {
-      setError("You must be logged in to register items.");
+      setError(t("register", "mustBeLoggedIn"));
       setIsSubmitting(false);
       return;
     }
@@ -102,7 +105,7 @@ function RegisterPageContent() {
     // At this point, qrCode is guaranteed to be non-null due to early return check
     console.log("Registering item with QR code:", qrCode);
     if (!qrCode) {
-      setError("Invalid QR code.");
+      setError(t("register", "invalidQRCodeError"));
       setIsSubmitting(false);
       return;
     }
@@ -120,7 +123,7 @@ function RegisterPageContent() {
     const savedItem = await db.registerItem(itemData);
 
     if (!savedItem) {
-      setError("Failed to register item. Please try again.");
+      setError(t("register", "registrationFailed"));
       setIsSubmitting(false);
       return;
     }
@@ -160,16 +163,16 @@ function RegisterPageContent() {
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="text-6xl mb-4">❌</div>
             <h1 className="text-2xl font-bold text-gray-800 mb-4">
-              Invalid QR Code
+              {t("register", "invalidQRCode")}
             </h1>
             <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200 mb-6">
               <h3 className="font-bold text-yellow-900 mb-2">
-                📱 How to Register
+                📱 {t("register", "howToRegister")}
               </h3>
               <ol className="text-sm text-yellow-800 text-left space-y-1">
-                <li>1. Scan a valid QR code with your phone camera</li>
-                <li>2. The QR code must redirect to this website</li>
-                <li>3. You'll then be able to register the item</li>
+                <li>{t("register", "howToRegisterStep1")}</li>
+                <li>{t("register", "howToRegisterStep2")}</li>
+                <li>{t("register", "howToRegisterStep3")}</li>
               </ol>
             </div>
             <div className="flex gap-4">
@@ -177,13 +180,13 @@ function RegisterPageContent() {
                 href="/scan"
                 className="flex-1 px-6 py-3 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all"
               >
-                Scan QR Code
+                {t("register", "scanQRCodeLink")}
               </a>
               <a
                 href="/dashboard"
                 className="flex-1 px-6 py-3 rounded-lg text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all"
               >
-                My Dashboard
+                {t("register", "myDashboard")}
               </a>
             </div>
           </div>
@@ -199,29 +202,27 @@ function RegisterPageContent() {
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="text-6xl mb-4">✅</div>
             <h1 className="text-2xl font-bold text-gray-800 mb-4">
-              Registration Complete!
+              {t("register", "registrationComplete")}
             </h1>
             <p className="text-gray-600 mb-6">
-              Your <strong>{formData.itemName}</strong> has been registered
-              successfully.
+              {t("register", "registrationSuccess").replace("{item}", formData.itemName)}
             </p>
 
             <div className="bg-blue-50 rounded-lg p-6 border border-blue-200 mb-6">
               <h3 className="font-bold text-blue-900 mb-3">
-                📊 Manage Your Items
+                📊 {t("register", "manageItems")}
               </h3>
               <p className="text-sm text-blue-800 mb-4">
-                Track your registered items and get notified if they&apos;re
-                found!
+                {t("register", "trackItems")}
               </p>
               <p className="text-xs text-blue-700 mb-4">
-                Registered to: <strong>{user?.email}</strong>
+                {t("register", "registeredTo")} <strong>{user?.email}</strong>
               </p>
               <a
                 href="/dashboard"
                 className="inline-block w-full px-6 py-3 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all"
               >
-                Go to Dashboard
+                {t("register", "goToDashboard")}
               </a>
             </div>
           </div>
@@ -237,24 +238,27 @@ function RegisterPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
       <div className="max-w-2xl mx-auto p-4 py-8 space-y-6">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="text-6xl mb-4">📱</div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Register Your QR Code
+            {t("register", "title")}
           </h1>
           <p className="text-gray-800">
-            Protect your items with QR Lost & Found
+            {t("register", "subtitle")}
           </p>
         </div>
 
         {/* QR Code Info */}
         <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">🏷️ QR Code</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">🏷️ {t("register", "qrCodeInfo")}</h2>
           <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-800 mb-2">QR Code ID:</p>
+            <p className="text-sm text-gray-800 mb-2">{t("register", "qrCodeId")}</p>
             <p className="text-lg font-mono font-bold text-gray-800">
               {qrCode}
             </p>
@@ -264,7 +268,7 @@ function RegisterPageContent() {
         {/* Registration Form */}
         <div className="bg-white rounded-2xl shadow-xl p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">
-            📝 Item Information
+            📝 {t("register", "itemInformation")}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -272,7 +276,7 @@ function RegisterPageContent() {
                 htmlFor="itemName"
                 className="block text-sm font-medium text-gray-900 mb-2"
               >
-                Item Name *
+                {t("register", "itemName")} *
               </label>
               <input
                 type="text"
@@ -280,7 +284,7 @@ function RegisterPageContent() {
                 required
                 value={formData.itemName}
                 onChange={handleChange}
-                placeholder="e.g., Black Backpack, Water Bottle"
+                placeholder={t("register", "itemNamePlaceholder")}
                 className="w-full border-2 border-gray-200 rounded-lg p-3 text-black placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
@@ -290,25 +294,25 @@ function RegisterPageContent() {
                 htmlFor="ownerName"
                 className="block text-sm font-medium text-gray-900 mb-2"
               >
-                Your Name (optional)
+                {t("register", "yourName")}
               </label>
               <input
                 type="text"
                 id="ownerName"
                 value={formData.ownerName}
                 onChange={handleChange}
-                placeholder="John Doe"
+                placeholder={t("register", "yourNamePlaceholder")}
                 className="w-full border-2 border-gray-200 rounded-lg p-3 text-black placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-medium text-gray-900 mb-2">
-                Registered Email
+                {t("register", "registeredEmail")}
               </label>
               <p className="text-gray-700 font-medium">{user?.email}</p>
               <p className="text-xs text-gray-500 mt-1">
-                Items will be registered to your authenticated account
+                {t("register", "accountNote")}
               </p>
             </div>
 
@@ -327,7 +331,7 @@ function RegisterPageContent() {
                   : "bg-blue-600 hover:bg-blue-700"
               }`}
             >
-              {isSubmitting ? "Registering..." : "Register Item"}
+              {isSubmitting ? t("register", "registering") : t("register", "registerItem")}
             </button>
           </form>
         </div>
@@ -337,11 +341,9 @@ function RegisterPageContent() {
           <div className="flex items-start">
             <div className="text-3xl mr-4">💡</div>
             <div>
-              <h3 className="font-bold text-yellow-900 mb-2">Next Steps</h3>
+              <h3 className="font-bold text-yellow-900 mb-2">{t("register", "nextSteps")}</h3>
               <p className="text-sm text-gray-800">
-                After registration, keep this QR code on your item. If someone
-                finds it, they can scan it with their phone camera to help
-                return it to you!
+                {t("register", "nextStepsDescription")}
               </p>
             </div>
           </div>
@@ -350,7 +352,7 @@ function RegisterPageContent() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-gray-800 text-sm">
-            Powered by <strong>QR Lost & Found</strong> 📱
+            {t("common", "poweredBy")} 📱
           </p>
         </div>
       </div>

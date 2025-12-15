@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Script from "next/script";
+import { LanguageProvider } from "@/context/languageContext";
 
 export const metadata: Metadata = {
   title: "QR Lost & Found - Never Lose Your Valuables Again",
@@ -48,7 +49,9 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="antialiased">
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
         <Script id="register-sw" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {

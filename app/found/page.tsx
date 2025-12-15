@@ -1,10 +1,12 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { DROP_OFF_LOCATIONS, type ItemData, type Location } from "@/lib/config";
 import { db } from "@/lib/supabase";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import LanguageSwitch from "../components/languageSwitchButton";
 
 type ViewState =
   | "loading"
@@ -18,6 +20,7 @@ type ViewState =
   | "expired";
 
 function FoundPageContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const qrCode = searchParams.get("qr") || null;
 
@@ -140,14 +143,14 @@ function FoundPageContent() {
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Invalid QR Code
+            {t("common", "invalidQRCode")}
           </h1>
-          <p className="text-gray-600 mb-6">Please scan a valid QR code.</p>
+          <p className="text-gray-600 mb-6">{t("found", "invalidQRMessage")}</p>
           <Link
             href="/"
             className="inline-block px-6 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all"
           >
-            Go to Home
+            {t("common", "goToHome")}
           </Link>
         </div>
       </div>
@@ -155,7 +158,10 @@ function FoundPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
       <div className="max-w-2xl mx-auto p-4 py-8">
         {/* State: Loading */}
         {viewState === "loading" && (
@@ -163,10 +169,10 @@ function FoundPageContent() {
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">⏳</div>
               <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                Loading...
+                {t("found", "loadingTitle")}
               </h1>
               <p className="text-gray-600">
-                Checking QR code registration status...
+                {t("found", "loadingDescription")}
               </p>
             </div>
           </div>
@@ -178,17 +184,16 @@ function FoundPageContent() {
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">❓</div>
               <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                QR Code Not Registered
+                {t("found", "notRegisteredTitle")}
               </h1>
               <p className="text-gray-600 mb-6">
-                This QR code hasn&apos;t been registered yet. Register it to
-                start protecting your item!
+                {t("found", "notRegisteredDescription")}
               </p>
               <a
                 href={`/register?qr=${qrCode}`}
                 className="inline-block w-full py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all"
               >
-                Register This QR Code
+                {t("found", "registerThisQR")}
               </a>
             </div>
           </div>
@@ -202,7 +207,7 @@ function FoundPageContent() {
               {itemData.ownerName && itemData.ownerName.trim() ? (
                 <>
                   <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                    This Item Belongs To
+                    {t("found", "thisItemBelongsTo")}
                   </h1>
                   <p className="text-3xl font-bold text-blue-600 mb-4">
                     {itemData.ownerName}
@@ -210,20 +215,20 @@ function FoundPageContent() {
                 </>
               ) : (
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                  Lost Item Found
+                  {t("found", "lostItemFound")}
                 </h1>
               )}
-              <p className="text-gray-600">
-                If you found this item, please help return it!
-              </p>
+              <p className="text-gray-600">{t("found", "helpReturn")}</p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                📦 Item Details
+                📦 {t("found", "itemDetails")}
               </h2>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2">Item:</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  {t("found", "item")}
+                </p>
                 <p className="text-lg font-bold text-gray-800">
                   {itemData.name}
                 </p>
@@ -234,7 +239,7 @@ function FoundPageContent() {
               onClick={handleReportFound}
               className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
             >
-              🔍 I Found This Item
+              🔍 {t("found", "iFoundThis")}
             </button>
           </div>
         )}
@@ -246,23 +251,22 @@ function FoundPageContent() {
               <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
                 <div className="text-6xl mb-4">📍</div>
                 <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                  Select Drop-off Location
+                  {t("found", "selectDropoffLocation")}
                 </h1>
                 <p className="text-gray-600">
-                  Please drop off the item at one of these partner locations:
+                  {t("found", "dropoffInstruction")}
                 </p>
               </div>
 
               <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
                 <p className="text-sm text-yellow-800 text-center">
-                  ⚠️ The owner has been notified that you found their item.
-                  Please select where you&apos;ll drop it off.
+                  ⚠️ {t("found", "ownerNotified")}
                 </p>
               </div>
 
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  📍 Available Locations
+                  📍 {t("found", "availableLocations")}
                 </h2>
                 <div className="space-y-3">
                   {DROP_OFF_LOCATIONS.map((location) => (
@@ -298,9 +302,9 @@ function FoundPageContent() {
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">✅</div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                Confirm Drop-off
+                {t("found", "confirmDropoff")}
               </h1>
-              <p className="text-gray-600">You selected:</p>
+              <p className="text-gray-600">{t("found", "youSelected")}</p>
               <p className="text-xl font-bold text-blue-600 mt-2">
                 {selectedLocation.name}
               </p>
@@ -311,36 +315,37 @@ function FoundPageContent() {
               <div className="flex items-start">
                 <div className="text-3xl mr-4">⚠️</div>
                 <div>
-                  <h3 className="font-bold text-red-900 mb-2">Important</h3>
+                  <h3 className="font-bold text-red-900 mb-2">
+                    {t("found", "important")}
+                  </h3>
                   <p className="text-sm text-red-800">
-                    Please only click &quot;I Dropped It Off&quot; after you
-                    have physically dropped off the item at the location.
+                    {t("found", "dropoffWarning")}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h3 className="font-bold text-gray-800 mb-3">📋 Instructions:</h3>
+              <h3 className="font-bold text-gray-800 mb-3">
+                📋 {t("found", "instructions")}
+              </h3>
               <ol className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start">
                   <span className="font-bold mr-2">1.</span>
                   <span>
-                    Take the item to <strong>{selectedLocation.name}</strong>
+                    {t("found", "instruction1").replace(
+                      "{location}",
+                      selectedLocation.name
+                    )}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2">2.</span>
-                  <span>
-                    Tell the staff you&apos;re dropping off a lost item from QR
-                    Lost & Found
-                  </span>
+                  <span>{t("found", "instruction2")}</span>
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2">3.</span>
-                  <span>
-                    After drop-off, return here and click the button below
-                  </span>
+                  <span>{t("found", "instruction3")}</span>
                 </li>
               </ol>
             </div>
@@ -349,14 +354,14 @@ function FoundPageContent() {
               onClick={handleConfirmDropOff}
               className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
             >
-              ✅ I Dropped It Off Here
+              ✅ {t("found", "iDroppedItOff")}
             </button>
 
             <button
               onClick={() => setViewState("reportedFound")}
               className="w-full py-3 rounded-xl font-semibold text-gray-600 bg-white border-2 border-gray-300 hover:bg-gray-50 transition-all"
             >
-              ← Choose Different Location
+              ← {t("found", "chooseDifferent")}
             </button>
           </div>
         )}
@@ -367,20 +372,22 @@ function FoundPageContent() {
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">📦</div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                Item Awaiting Pickup
+                {t("found", "awaitingPickupTitle")}
               </h1>
               <p className="text-gray-600 mb-4">
-                This item is at a drop-off location
+                {t("found", "awaitingPickupDescription")}
               </p>
             </div>
 
             <div className="bg-green-50 rounded-2xl shadow-xl p-6 border-2 border-green-200">
               <h2 className="text-xl font-bold text-green-900 mb-4">
-                ✅ Drop-off Confirmed
+                ✅ {t("found", "dropoffConfirmed")}
               </h2>
               <div className="space-y-3">
                 <div className="bg-white rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Location:</p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    {t("found", "location")}
+                  </p>
                   <p className="text-lg font-bold text-gray-800">
                     {itemData.location.name}
                   </p>
@@ -393,7 +400,9 @@ function FoundPageContent() {
                 </div>
 
                 <div className="bg-white rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Pickup Deadline:</p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    {t("found", "pickupDeadline")}
+                  </p>
                   <p className="text-lg font-bold text-red-600">
                     {itemData.expiresAt &&
                       new Date(itemData.expiresAt).toLocaleDateString("en-US", {
@@ -405,26 +414,32 @@ function FoundPageContent() {
                   </p>
                   <div className="mt-3">
                     <p className="text-xs text-gray-600 mb-2">
-                      Time remaining:
+                      {t("found", "timeRemaining")}
                     </p>
                     <div className="flex items-center justify-center gap-2">
                       <div className="bg-blue-100 rounded-lg px-4 py-3 text-center">
                         <span className="text-2xl font-bold text-blue-900">
                           {countdown.days}
                         </span>
-                        <p className="text-xs text-gray-600 mt-1">days</p>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {t("found", "days")}
+                        </p>
                       </div>
                       <div className="bg-blue-100 rounded-lg px-4 py-3 text-center">
                         <span className="text-2xl font-bold text-blue-900">
                           {countdown.hours}
                         </span>
-                        <p className="text-xs text-gray-600 mt-1">hours</p>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {t("found", "hours")}
+                        </p>
                       </div>
                       <div className="bg-blue-100 rounded-lg px-4 py-3 text-center">
                         <span className="text-2xl font-bold text-blue-900">
                           {countdown.minutes}
                         </span>
-                        <p className="text-xs text-gray-600 mt-1">mins</p>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {t("found", "mins")}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -434,14 +449,13 @@ function FoundPageContent() {
 
             <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
               <p className="text-sm text-yellow-800 text-center">
-                ⏰ The owner has 7 days to pick up this item. After that, it may
-                be donated or discarded.
+                ⏰ {t("found", "sevenDayNotice")}
               </p>
             </div>
 
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <p className="text-sm text-blue-800 text-center">
-                💙 Thank you for helping return this item to its owner!
+                💙 {t("found", "thankYou")}
               </p>
             </div>
           </div>
@@ -453,17 +467,17 @@ function FoundPageContent() {
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">🎉</div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                Item Retrieved!
+                {t("found", "itemRetrieved")}
               </h1>
               <p className="text-gray-600">
-                This item has been picked up by the owner.
+                {t("found", "itemRetrievedDescription")}
               </p>
             </div>
 
             <div className="bg-green-50 rounded-lg p-6 border border-green-200">
               <p className="text-sm text-green-800 text-center">
-                ✅ The owner successfully retrieved their{" "}
-                <strong>{itemData.name}</strong>.
+                ✅{" "}
+                {t("found", "ownerRetrieved").replace("{item}", itemData.name)}
               </p>
             </div>
           </div>
@@ -475,17 +489,16 @@ function FoundPageContent() {
             <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
               <div className="text-6xl mb-4">⏰</div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                Pickup Period Expired
+                {t("found", "pickupExpired")}
               </h1>
               <p className="text-gray-600">
-                The 7-day pickup window for this item has expired.
+                {t("found", "pickupExpiredDescription")}
               </p>
             </div>
 
             <div className="bg-red-50 rounded-lg p-6 border border-red-200">
               <p className="text-sm text-red-800 text-center">
-                The item may have been donated or discarded according to the
-                drop-off location&apos;s policy.
+                {t("found", "expiredNotice")}
               </p>
             </div>
           </div>
@@ -494,10 +507,10 @@ function FoundPageContent() {
         {/* Footer */}
         <div className="text-center mt-8">
           <Link href="/" className="text-blue-600 hover:underline text-sm">
-            ← Back to Home
+            ← {t("scan", "backToHome")}
           </Link>
           <p className="text-gray-600 text-sm mt-4">
-            Powered by <strong>QR Lost & Found</strong> 📱
+            {t("common", "poweredBy")} 📱
           </p>
         </div>
       </div>

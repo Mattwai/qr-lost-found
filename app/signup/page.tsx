@@ -4,8 +4,11 @@ import { auth } from "@/lib/supabase";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import LanguageSwitch from "../components/languageSwitchButton";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function SignUpPageContent() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,13 +27,13 @@ function SignUpPageContent() {
 
     // Validation
     if (!formData.email || !formData.password || !formData.confirmPassword) {
-      setError("All fields are required");
+      setError(t("signup", "allFieldsRequired"));
       setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("signup", "passwordsMismatch"));
       setLoading(false);
       return;
     }
@@ -54,7 +57,7 @@ function SignUpPageContent() {
       }
     } catch (err) {
       console.error("Sign up error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError(t("common", "unexpectedError"));
       setLoading(false);
     }
   };
@@ -67,14 +70,17 @@ function SignUpPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Create your account
+            {t("signup", "title")}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Join QR Lost & Found to register and track your items
+            {t("signup", "subtitle")}
           </p>
         </div>
 
@@ -94,7 +100,7 @@ function SignUpPageContent() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-                Email Address
+                {t("auth", "emailAddress")}
               </label>
               <input
                 id="email"
@@ -104,7 +110,7 @@ function SignUpPageContent() {
                 value={formData.email}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your email address"
+                placeholder={t("auth", "enterEmail")}
               />
             </div>
 
@@ -113,7 +119,7 @@ function SignUpPageContent() {
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700"
               >
-                Password
+                {t("auth", "password")}
               </label>
               <input
                 id="password"
@@ -123,7 +129,7 @@ function SignUpPageContent() {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your password"
+                placeholder={t("auth", "enterPassword")}
               />
             </div>
 
@@ -132,7 +138,7 @@ function SignUpPageContent() {
                 htmlFor="confirmPassword"
                 className="block text-sm font-medium text-gray-700"
               >
-                Confirm Password
+                {t("signup", "confirmPassword")}
               </label>
               <input
                 id="confirmPassword"
@@ -142,7 +148,7 @@ function SignUpPageContent() {
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm your password"
+                placeholder={t("signup", "confirmPasswordPlaceholder")}
               />
             </div>
           </div>
@@ -175,18 +181,18 @@ function SignUpPageContent() {
                   ></path>
                 </svg>
               ) : null}
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? t("signup", "creatingAccount") : t("signup", "createAccount")}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{" "}
+              {t("signup", "alreadyHaveAccount")}{" "}
               <Link
                 href="/login"
                 className="font-medium text-indigo-600 hover:text-indigo-500"
               >
-                Sign in here
+                {t("signup", "signInHere")}
               </Link>
             </p>
           </div>

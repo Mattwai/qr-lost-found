@@ -1,10 +1,13 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { BrowserMultiFormatReader } from "@zxing/library";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import LanguageSwitch from "../components/languageSwitchButton";
 
 export default function ScanPage() {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -70,13 +73,11 @@ export default function ScanPage() {
 
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
-          setError(
-            "Camera permission denied. Please allow camera access to scan QR codes."
-          );
+          setError(t("scan", "cameraPermissionDenied"));
         } else if (err.name === "NotFoundError") {
-          setError("No camera found on this device.");
+          setError(t("scan", "noCameraFound"));
         } else {
-          setError("Error accessing camera: " + err.message);
+          setError(t("scan", "cameraAccessError") + " " + err.message);
         }
       }
     }
@@ -97,24 +98,25 @@ export default function ScanPage() {
   };
 
   const handleManualEntry = () => {
-    const code = prompt("Enter QR code manually:");
+    const code = prompt(t("scan", "manualEntryPrompt"));
     if (code) {
       router.push(`/found?qr=${code}`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
       <div className="max-w-2xl mx-auto p-4 py-8">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center mb-6">
           <div className="text-6xl mb-4">📷</div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Scan QR Code
+            {t("scan", "title")}
           </h1>
-          <p className="text-gray-600">
-            Point your camera at a QR code to scan it
-          </p>
+          <p className="text-gray-600">{t("scan", "subtitle")}</p>
         </div>
 
         {/* Camera View */}
@@ -123,16 +125,16 @@ export default function ScanPage() {
             <div className="text-center py-12">
               <div className="text-5xl mb-4">📱</div>
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Ready to Scan
+                {t("scan", "readyToScan")}
               </h2>
               <p className="text-gray-600 mb-6">
-                We&apos;ll need access to your camera to scan QR codes.
+                {t("scan", "cameraPermission")}
               </p>
               <button
                 onClick={startScanning}
                 className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all shadow-lg"
               >
-                Start Scanning
+                {t("scan", "startScanning")}
               </button>
             </div>
           )}
@@ -141,7 +143,7 @@ export default function ScanPage() {
             <div className="text-center py-12">
               <div className="text-5xl mb-4">⚠️</div>
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Camera Access Needed
+                {t("scan", "cameraAccessNeeded")}
               </h2>
               <p className="text-gray-600 mb-6">{error}</p>
               <div className="space-y-3">
@@ -149,13 +151,13 @@ export default function ScanPage() {
                   onClick={startScanning}
                   className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all"
                 >
-                  Try Again
+                  {t("scan", "tryAgain")}
                 </button>
                 <button
                   onClick={handleManualEntry}
                   className="w-full py-3 rounded-xl font-semibold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 transition-all"
                 >
-                  Enter Code Manually
+                  {t("scan", "enterManually")}
                 </button>
               </div>
             </div>
@@ -179,14 +181,12 @@ export default function ScanPage() {
                 </div>
               </div>
               <div className="mt-4 text-center">
-                <p className="text-gray-600 mb-4">
-                  Position the QR code within the frame
-                </p>
+                <p className="text-gray-600 mb-4">{t("scan", "positionQR")}</p>
                 <button
                   onClick={stopScanning}
                   className="w-full py-3 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-all"
                 >
-                  Stop Scanning
+                  {t("scan", "stopScanning")}
                 </button>
               </div>
             </div>
@@ -195,13 +195,15 @@ export default function ScanPage() {
 
         {/* Instructions */}
         <div className="bg-blue-50 rounded-2xl shadow-xl p-6 border border-blue-200">
-          <h3 className="font-bold text-blue-900 mb-3">💡 Tips for Scanning</h3>
+          <h3 className="font-bold text-blue-900 mb-3">
+            💡 {t("scan", "tipsTitle")}
+          </h3>
           <ul className="space-y-2 text-sm text-blue-800">
-            <li>• Make sure the QR code is well-lit</li>
-            <li>• Hold your phone steady</li>
-            <li>• Keep the QR code within the frame</li>
-            <li>• Avoid reflections on glossy surfaces</li>
-            <li>• If scanning fails, try entering the code manually</li>
+            <li>• {t("scan", "tipWellLit")}</li>
+            <li>• {t("scan", "tipHoldSteady")}</li>
+            <li>• {t("scan", "tipKeepInFrame")}</li>
+            <li>• {t("scan", "tipAvoidReflections")}</li>
+            <li>• {t("scan", "tipManualEntry")}</li>
           </ul>
         </div>
 
@@ -211,29 +213,26 @@ export default function ScanPage() {
             onClick={handleManualEntry}
             className="w-full py-4 rounded-xl font-semibold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 transition-all shadow-lg"
           >
-            Enter Code Manually
+            {t("scan", "enterManually")}
           </button>
           <button
             onClick={() => (window.location.href = "/")}
             className="w-full py-3 rounded-xl font-semibold text-gray-600 bg-white border-2 border-gray-300 hover:bg-gray-50 transition-all"
           >
-            ← Back to Home
+            ← {t("scan", "backToHome")}
           </button>
         </div>
 
         {/* Browser Compatibility Notice */}
         <div className="mt-6 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
           <p className="text-xs text-yellow-800 text-center">
-            ℹ️ Camera access works on modern browsers (Chrome, Safari, Edge,
-            Firefox). Make sure to allow camera permissions when prompted.
+            ℹ️ {t("scan", "compatibilityNotice")}
           </p>
         </div>
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-gray-600 text-sm">
-            Powered by <strong>QR Lost & Found</strong> 📱
-          </p>
+          <p className="text-gray-600 text-sm">{t("scan", "poweredBy")} 📱</p>
         </div>
       </div>
     </div>

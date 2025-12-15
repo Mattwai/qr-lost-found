@@ -4,8 +4,11 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/supabase";
+import { useTranslation } from "@/hooks/useTranslation";
+import LanguageSwitch from "../components/languageSwitchButton";
 
 function LoginPageContent() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -34,7 +37,7 @@ function LoginPageContent() {
 
     // Validation
     if (!formData.email || !formData.password) {
-      setError("Please enter both email and password");
+      setError(t("auth", "emailPasswordRequired"));
       setLoading(false);
       return;
     }
@@ -58,7 +61,7 @@ function LoginPageContent() {
       }
     } catch (err) {
       console.error("Sign in error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError(t("common", "unexpectedError"));
       setLoading(false);
     }
   };
@@ -71,14 +74,17 @@ function LoginPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Sign in to your account
+            {t("auth", "signInTitle")}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Access your QR Lost & Found dashboard
+            {t("auth", "dashboardAccess")}
           </p>
         </div>
 
@@ -92,7 +98,7 @@ function LoginPageContent() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
+                {t("auth", "emailAddress")}
               </label>
               <input
                 id="email"
@@ -102,13 +108,13 @@ function LoginPageContent() {
                 value={formData.email}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your email address"
+                placeholder={t("auth", "enterEmail")}
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t("auth", "password")}
               </label>
               <input
                 id="password"
@@ -118,7 +124,7 @@ function LoginPageContent() {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your password"
+                placeholder={t("auth", "enterPassword")}
               />
             </div>
           </div>
@@ -126,7 +132,7 @@ function LoginPageContent() {
           <div className="flex items-center justify-between">
             <div className="text-sm">
               <Link href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
+                {t("auth", "forgotPassword")}
               </Link>
             </div>
           </div>
@@ -143,15 +149,15 @@ function LoginPageContent() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : null}
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? t("common", "signingIn") : t("auth", "signIn")}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
+              {t("auth", "noAccount")}{" "}
               <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Create one here
+                {t("auth", "createAccount")}
               </Link>
             </p>
           </div>
