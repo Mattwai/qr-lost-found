@@ -55,12 +55,12 @@ function FoundPageContent() {
     setItemData(item);
 
     // Set view state based on item status
+    // Always show "active" first for new scans, except for final states
     switch (item.status) {
       case "active":
-        setViewState("active");
-        break;
       case "reportedFound":
-        setViewState("reportedFound");
+        // Always show the initial found page first for these states
+        setViewState("active");
         break;
       case "droppedOff":
         setViewState("droppedOff");
@@ -245,12 +245,28 @@ function FoundPageContent() {
               </div>
             </div>
 
-            <button
-              onClick={handleReportFound}
-              className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
-            >
-              🔍 {t("found", "iFoundThis")}
-            </button>
+            {itemData.status === "reportedFound" ? (
+              <div className="space-y-4">
+                <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                  <p className="text-sm text-yellow-800 text-center">
+                    ⚠️ {t("found", "alreadyReported")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setViewState("reportedFound")}
+                  className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition-all shadow-lg"
+                >
+                  📍 {t("found", "helpDropOff")}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleReportFound}
+                className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-green-600 hover:bg-green-700 transition-all shadow-lg"
+              >
+                🔍 {t("found", "iFoundThis")}
+              </button>
+            )}
           </div>
         )}
 

@@ -748,5 +748,13 @@ export const translations = {
       en: "Invalid QR code format",
       zh: "二维码格式无效",
     },
+    alreadyReported: {
+      en: "Someone else already reported finding this item. You can help by dropping it off at a location below.",
+      zh: "已有人报告找到此物品。您可以通过将其送到下方地点来提供帮助。",
+    },
+    helpDropOff: {
+      en: "Help Drop Off This Item",
+      zh: "帮助交接此物品",
+    },
   },
 } as const;
