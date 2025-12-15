@@ -55,8 +55,8 @@ export const DROP_OFF_LOCATIONS: Location[] = [
   },
   {
     id: 4,
-    name: "Campus Security Office",
-    address: "321 University Drive, Campus",
+    name: "Fudan University, North Canteen, Level 1 Help Desk",
+    address: "复旦大学邯郸校区北食堂",
     phone: "555-0104",
     coordinates: {
       lat: 40.7295,
